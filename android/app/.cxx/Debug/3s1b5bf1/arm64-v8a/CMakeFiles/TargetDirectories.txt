@@ -1,0 +1,2 @@
+C:/Users/leduc/SGU/HK2-4/Doanchuyennganh/Doanchuyennganh/android/app/.cxx/Debug/3s1b5bf1/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/leduc/SGU/HK2-4/Doanchuyennganh/Doanchuyennganh/android/app/.cxx/Debug/3s1b5bf1/arm64-v8a/CMakeFiles/rebuild_cache.dir
