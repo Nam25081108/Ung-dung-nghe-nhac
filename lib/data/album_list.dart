@@ -19,9 +19,12 @@ final List<Album> albumList = [
     id: 'album_ronboogz_1744305674',
     name: 'Ronboogz',
     coverImage: 'assets/images/album_ronboogz.jpg',
-    songIds: [
-      11,
-      12,
-    ],
+    songIds: [11, 12, ],
+  ),
+  Album(
+    id: 'album_1__1744359686',
+    name: '1%',
+    coverImage: 'assets/images/album_1_.jpg',
+    songIds: [2, 3, 13, ],
   ),
 ];

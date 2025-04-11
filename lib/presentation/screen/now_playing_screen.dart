@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:t4/data/song_list.dart';
 import 'package:t4/presentation/screen/lyric_screen.dart';
+import 'package:t4/data/playlist_list.dart';
 import 'dart:math';
 
 class NowPlayingScreen extends StatefulWidget {
@@ -28,6 +29,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = const Duration(seconds: 100); // default ban đầu
   bool _isPlaying = false;
+  bool _isAddedToPlaylist = false; // Trạng thái đã thêm vào danh sách phát chưa
 
   // Thêm trạng thái cho lặp lại và phát ngẫu nhiên
   bool _isRepeatEnabled = false;
@@ -100,6 +102,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
     _currentSong = widget.songList[_currentIndex];
     _initializePlayer(_currentSong.assetPath);
+    // Cập nhật lại trạng thái khi chuyển bài
+    setState(() {
+      _isAddedToPlaylist = false;
+    });
   }
 
   void _playPreviousSong() {
@@ -120,6 +126,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
     _currentSong = widget.songList[_currentIndex];
     _initializePlayer(_currentSong.assetPath);
+    // Cập nhật lại trạng thái khi chuyển bài
+    setState(() {
+      _isAddedToPlaylist = false;
+    });
   }
 
   void _togglePlay() {
@@ -157,6 +167,90 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             ? 'Đã bật phát ngẫu nhiên'
             : 'Đã tắt phát ngẫu nhiên'),
         duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
+  void _showAddToPlaylistDialog() {
+    if (_isAddedToPlaylist) {
+      // Nếu đã thêm vào danh sách phát, không làm gì cả
+      return;
+    }
+
+    // Lọc ra các playlist không phải hệ thống
+    List<Playlist> userPlaylists =
+        globalPlaylistList.where((playlist) => !playlist.isSystem).toList();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Thêm vào danh sách phát'),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: userPlaylists.isEmpty
+              ? const Center(child: Text('Chưa có danh sách phát nào'))
+              : ListView.builder(
+                  itemCount: userPlaylists.length,
+                  itemBuilder: (context, index) {
+                    final playlist = userPlaylists[index];
+
+                    return ListTile(
+                      title: Text(playlist.name),
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Image.asset(
+                          playlist.coverImage,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      onTap: () {
+                        // Thêm bài hát vào playlist
+                        if (!playlist.songIds.contains(_currentSong.id)) {
+                          playlist.songIds.add(_currentSong.id);
+
+                          // Cập nhật lại playlist trong danh sách toàn cục
+                          for (int i = 0; i < globalPlaylistList.length; i++) {
+                            if (globalPlaylistList[i].id == playlist.id) {
+                              globalPlaylistList[i] = playlist;
+                              break;
+                            }
+                          }
+
+                          setState(() {
+                            _isAddedToPlaylist = true;
+                          });
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Đã thêm "${_currentSong.title}" vào danh sách phát "${playlist.name}"'),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Bài hát đã có trong danh sách phát "${playlist.name}"'),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+        ],
       ),
     );
   }
@@ -199,8 +293,15 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.more_vert, color: Colors.white),
-                    onPressed: () {},
+                    icon: Icon(
+                      _isAddedToPlaylist
+                          ? Icons.check_circle
+                          : Icons.add_circle,
+                      color: _isAddedToPlaylist
+                          ? const Color(0xFF31C934)
+                          : Colors.white,
+                    ),
+                    onPressed: _showAddToPlaylistDialog,
                   ),
                 ],
               ),

@@ -7,6 +7,8 @@ import 'package:t4/presentation/screen/home_screen.dart';
 import 'package:t4/presentation/screen/admin_login_screen.dart';
 import 'package:t4/presentation/screen/admin_dashboard_screen.dart';
 import 'package:t4/presentation/screen/forgot_password_screen.dart';
+import 'package:t4/presentation/screen/album_screen.dart';
+import 'package:t4/presentation/screen/playlist_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -37,6 +39,8 @@ class MyApp extends StatelessWidget {
         '/admin_login': (context) => const AdminLoginScreen(),
         '/admin': (context) => const AdminDashboardScreen(),
         '/forgot_password': (context) => const ForgotPasswordScreen(),
+        '/album': (context) => const AlbumScreen(),
+        '/playlist': (context) => const PlaylistScreen(),
       },
     );
   }
