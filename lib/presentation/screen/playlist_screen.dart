@@ -4,6 +4,7 @@ import 'package:t4/data/song_list.dart';
 import 'package:t4/presentation/screen/ProfileScreen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
 import 'package:t4/presentation/screen/playlist_detail_screen.dart';
+import 'package:t4/presentation/screen/now_playing_screen.dart';
 import 'dart:math';
 
 class PlaylistScreen extends StatefulWidget {
@@ -349,13 +350,17 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   }
 
   Widget _buildPlaylistListItem(Playlist playlist, String coverImage) {
+    List<Song> songs = getPlaylistSongs(playlist);
+    
     return GestureDetector(
       onTap: () {
-        // Mở trang chi tiết playlist khi bấm vào một playlist
+        // Khi bấm vào playlist sẽ mở trang chi tiết playlist
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PlaylistDetailScreen(playlist: playlist),
+            builder: (context) => PlaylistDetailScreen(
+              playlist: playlist,
+            ),
           ),
         );
       },
@@ -427,7 +432,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 ),
               ),
             ),
-            // Nút thêm vào danh sách phát
+            // Nút phát toàn bộ playlist
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: CircleAvatar(
@@ -436,13 +441,26 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 child: IconButton(
                   icon: const Icon(Icons.play_arrow, color: Color(0xFF31C934)),
                   onPressed: () {
-                    // Phát toàn bộ playlist
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Đang phát danh sách "${playlist.name}"'),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
+                    // Phát toàn bộ playlist từ bài đầu tiên
+                    if (songs.isNotEmpty) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NowPlayingScreen(
+                            song: songs[0],
+                            songList: songs,
+                            initialIndex: 0,
+                          ),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Danh sách phát "${playlist.name}" không có bài hát nào'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
                   },
                 ),
               ),
