@@ -225,21 +225,22 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(
-                                  'Đã thêm "${_currentSong.title}" vào danh sách phát "${playlist.name}"'),
+                              content: Text('Đã thêm "${_currentSong.title}" vào danh sách phát "${playlist.name}"'),
                               duration: const Duration(seconds: 2),
                             ),
                           );
+                          
+                          // Đóng dialog sau khi thêm thành công
+                          Navigator.pop(context);
                         } else {
+                          // Nếu bài hát đã có trong playlist
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(
-                                  'Bài hát đã có trong danh sách phát "${playlist.name}"'),
+                              content: Text('Bài hát "${_currentSong.title}" đã có trong danh sách phát này'),
                               duration: const Duration(seconds: 2),
                             ),
                           );
                         }
-                        Navigator.pop(context);
                       },
                     );
                   },
@@ -248,7 +249,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
+            child: const Text('Đóng'),
           ),
         ],
       ),

@@ -22,21 +22,26 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   void initState() {
     super.initState();
     // Chỉ hiển thị danh sách yêu thích và danh sách tạo bởi người dùng
-    _localPlaylistList = List.from(globalPlaylistList.where((playlist) => 
-      playlist.isSystem && playlist.id == 'playlist_my_favorites' || // Chỉ giữ lại danh sách yêu thích trong các playlist hệ thống
-      !playlist.isSystem // Giữ lại tất cả danh sách do người dùng tạo
-    ));
+    _updateLocalPlaylistList();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Cập nhật danh sách playlist khi quay lại màn hình này
+    _updateLocalPlaylistList();
+  }
+
+  // Phương thức mới để cập nhật danh sách playlist cục bộ
+  void _updateLocalPlaylistList() {
     setState(() {
-      _localPlaylistList = List.from(globalPlaylistList.where((playlist) => 
-        playlist.isSystem && playlist.id == 'playlist_my_favorites' || // Chỉ giữ lại danh sách yêu thích trong các playlist hệ thống
-        !playlist.isSystem // Giữ lại tất cả danh sách do người dùng tạo
-      ));
+      // Lọc chỉ lấy danh sách yêu thích và danh sách do người dùng tạo
+      _localPlaylistList = globalPlaylistList
+          .where((playlist) => 
+              (playlist.isSystem && playlist.id == 'playlist_my_favorites') || // Chỉ lấy danh sách yêu thích
+              (!playlist.isSystem) // Lấy tất cả danh sách do người dùng tạo
+          )
+          .toList();
     });
   }
 
@@ -278,12 +283,11 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                   isSystem: false, // Playlist người dùng tạo
                 );
 
-                // Cập nhật danh sách cục bộ và biến toàn cục
-                setState(() {
-                  _localPlaylistList.add(newPlaylist);
-                  // Thêm vào biến toàn cục
-                  globalPlaylistList.add(newPlaylist);
-                });
+                // Thêm vào biến toàn cục
+                globalPlaylistList.add(newPlaylist);
+                
+                // Cập nhật danh sách cục bộ ngay lập tức
+                _updateLocalPlaylistList();
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
