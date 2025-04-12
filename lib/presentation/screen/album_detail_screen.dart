@@ -192,7 +192,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border),
+            icon: Icon(Icons.person),
             label: '',
           ),
         ],
