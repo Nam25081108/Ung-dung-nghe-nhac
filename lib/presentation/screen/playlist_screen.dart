@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:t4/data/playlist_list.dart';
 import 'package:t4/data/song_list.dart';
-import 'package:t4/presentation/screen/FavoriteScreen.dart';
+import 'package:t4/presentation/screen/ProfileScreen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
 import 'package:t4/presentation/screen/playlist_detail_screen.dart';
 import 'dart:math';
@@ -231,7 +231,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
             // Mở màn hình yêu thích
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => FavoriteScreen()),
+              MaterialPageRoute(builder: (context) => ProfileScreen()),
             );
           } else if (index == 0) {
             // Trở về màn hình home
