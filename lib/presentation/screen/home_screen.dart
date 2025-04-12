@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:t4/data/song_list.dart';
-import 'package:t4/presentation/screen/FavoriteScreen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
 import 'package:t4/presentation/screen/album_screen.dart';
 import 'package:t4/presentation/screen/playlist_screen.dart';
 import 'now_playing_screen.dart';
 import 'dart:math';
+import 'package:t4/presentation/screen/ProfileScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -220,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // Mở màn hình yêu thích
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => FavoriteScreen()),
+              MaterialPageRoute(builder: (context) => ProfileScreen()),
             );
           } else {
             setState(() {

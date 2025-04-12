@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:t4/data/playlist_list.dart';
 import 'package:t4/data/song_list.dart';
 import 'package:t4/presentation/screen/now_playing_screen.dart';
-import 'package:t4/presentation/screen/FavoriteScreen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
+import 'package:t4/presentation/screen/ProfileScreen.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final Playlist playlist;
@@ -154,13 +154,98 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     });
   }
 
+  void _showAddToOtherPlaylistDialog(Song song) {
+    // Lọc ra các playlist không phải hệ thống và không phải playlist hiện tại
+    List<Playlist> userPlaylists = globalPlaylistList
+        .where((playlist) => 
+            !playlist.isSystem && playlist.id != widget.playlist.id)
+        .toList();
+
+    if (userPlaylists.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bạn chưa tạo danh sách phát nào khác'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Thêm vào danh sách phát khác'),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: ListView.builder(
+            itemCount: userPlaylists.length,
+            itemBuilder: (context, index) {
+              final playlist = userPlaylists[index];
+              return ListTile(
+                title: Text(playlist.name),
+                leading: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: Image.asset(
+                    playlist.coverImage,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                onTap: () {
+                  // Thêm bài hát vào playlist được chọn
+                  if (!playlist.songIds.contains(song.id)) {
+                    playlist.songIds.add(song.id);
+                    
+                    // Cập nhật globalPlaylistList
+                    for (int i = 0; i < globalPlaylistList.length; i++) {
+                      if (globalPlaylistList[i].id == playlist.id) {
+                        globalPlaylistList[i] = playlist;
+                        break;
+                      }
+                    }
+                    
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            'Đã thêm "${song.title}" vào danh sách phát "${playlist.name}"'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            'Bài hát đã có trong danh sách phát "${playlist.name}"'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                  Navigator.pop(context);
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 250,
+            expandedHeight: 220,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
@@ -171,228 +256,180 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   fontSize: 20,
                 ),
               ),
-              background: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(widget.playlist.coverImage),
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(
+                    widget.playlist.coverImage,
                     fit: BoxFit.cover,
                   ),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.7),
-                    ],
-                  ),
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.7),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            backgroundColor: const Color(0xFF31C934),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.playlist.isSystem
-                        ? 'Danh sách hệ thống'
-                        : 'Danh sách người dùng',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${playlistSongs.length} bài hát',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: _playAllSongs,
-                        icon: const Icon(Icons.play_circle_filled),
-                        label: const Text('Phát tất cả'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF31C934),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.7),
+                        ],
                       ),
-                      if (!widget.playlist.isSystem)
-                        IconButton(
-                          onPressed: () {
-                            _showEditPlaylistDialog();
-                          },
-                          icon:
-                              const Icon(Icons.edit, color: Color(0xFF31C934)),
-                          style: IconButton.styleFrom(
-                            backgroundColor:
-                                const Color(0xFF31C934).withOpacity(0.2),
-                            padding: const EdgeInsets.all(12),
-                          ),
-                        ),
-                      IconButton(
-                        onPressed: () {
-                          if (!widget.playlist.isSystem) {
-                            _showAddSongsDialog();
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'Không thể thêm bài hát vào danh sách hệ thống'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.add, color: Color(0xFF31C934)),
-                        style: IconButton.styleFrom(
-                          backgroundColor:
-                              const Color(0xFF31C934).withOpacity(0.2),
-                          padding: const EdgeInsets.all(12),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
             ),
+            backgroundColor: Colors.black,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${playlistSongs.length} bài hát',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade300,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      // Nút tải xuống (Ví dụ từ hình)
+                      CircleAvatar(
+                        radius: 22,
+                        backgroundColor: Colors.grey.shade800,
+                        child: const Icon(Icons.download, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 16),
+                      // Nút shuffle (Ví dụ từ hình)
+                      CircleAvatar(
+                        radius: 22,
+                        backgroundColor: Colors.grey.shade800,
+                        child: const Icon(Icons.shuffle, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 16),
+                      // Nút phát
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _playAllSongs,
+                          icon: const Icon(Icons.play_circle_filled),
+                          label: const Text('Phát', style: TextStyle(fontSize: 16)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (!widget.playlist.isSystem)
+                    OutlinedButton.icon(
+                      onPressed: _showAddSongsDialog,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Thêm bài hát', style: TextStyle(fontSize: 14)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.grey),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 20),
+                  const Divider(color: Colors.grey),
+                ],
+              ),
+            ),
+          ),
+          // Danh sách bài hát
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 if (playlistSongs.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Text(
-                        'Chưa có bài hát nào trong danh sách phát này',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
-                        ),
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          Icon(Icons.music_note, size: 48, color: Colors.grey.shade600),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Chưa có bài hát nào',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          if (!widget.playlist.isSystem)
+                            ElevatedButton(
+                              onPressed: _showAddSongsDialog,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              child: const Text('Thêm bài hát đầu tiên'),
+                            ),
+                        ],
                       ),
                     ),
                   );
                 }
 
                 final song = playlistSongs[index];
-                return Dismissible(
-                  key: Key('song-${song.id}'),
-                  direction: widget.playlist.isSystem
-                      ? DismissDirection.none
-                      : DismissDirection.endToStart,
-                  background: Container(
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20.0),
-                    color: Colors.red,
-                    child: const Icon(Icons.delete, color: Colors.white),
+                return ListTile(
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Image.asset(
+                      song.coverImage,
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                  confirmDismiss: (direction) async {
-                    if (widget.playlist.isSystem) return false;
-
-                    return await showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Xác nhận'),
-                          content: Text(
-                              'Bạn có chắc muốn xóa "${song.title}" khỏi danh sách phát?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text('Hủy'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(true),
-                              child: const Text('Xóa'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  onDismissed: (direction) {
-                    setState(() {
-                      widget.playlist.songIds.remove(song.id);
-                      playlistSongs.removeAt(index);
-
-                      // Cập nhật globalPlaylistList
-                      for (int i = 0; i < globalPlaylistList.length; i++) {
-                        if (globalPlaylistList[i].id == widget.playlist.id) {
-                          // Đã tìm thấy playlist cần cập nhật
-                          globalPlaylistList[i] = widget.playlist;
-                          break;
-                        }
-                      }
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content:
-                            Text('Đã xóa "${song.title}" khỏi danh sách phát'),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                  child: ListTile(
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        song.coverImage,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      ),
+                  title: Text(
+                    song.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-                    title: Text(
-                      song.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(song.artist),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.more_vert),
-                      onPressed: () {
-                        _showSongOptions(song);
-                      },
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => NowPlayingScreen(
-                            song: song,
-                            songList: playlistSongs,
-                            initialIndex: index,
-                          ),
-                        ),
-                      );
+                  ),
+                  subtitle: Text(
+                    song.artist,
+                    style: TextStyle(color: Colors.grey.shade400),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.more_vert, color: Colors.grey),
+                    onPressed: () {
+                      _showSongOptions(song);
                     },
                   ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NowPlayingScreen(
+                          song: song,
+                          songList: playlistSongs,
+                          initialIndex: index,
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
               childCount: playlistSongs.isEmpty ? 1 : playlistSongs.length,
@@ -404,18 +441,21 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: '',
+            label: 'Home',
+            backgroundColor: Colors.black,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.search),
-            label: '',
+            label: 'Search',
+            backgroundColor: Colors.black,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border),
-            label: '',
+            icon: Icon(Icons.person),
+            label: 'Profile',
+            backgroundColor: Colors.black,
           ),
         ],
-        currentIndex: 0, // Home is selected by default
+        currentIndex: 0,
         onTap: (index) {
           if (index == 1) {
             // Mở màn hình tìm kiếm
@@ -424,10 +464,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               MaterialPageRoute(builder: (context) => SearchScreen()),
             );
           } else if (index == 2) {
-            // Mở màn hình yêu thích
+            // Mở màn hình hồ sơ (trước đây là yêu thích)
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => FavoriteScreen()),
+              MaterialPageRoute(builder: (context) => ProfileScreen()),
             );
           } else if (index == 0) {
             // Trở về màn hình home
@@ -437,8 +477,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         },
         showSelectedLabels: false,
         showUnselectedLabels: false,
-        selectedItemColor: const Color(0xFF31C934),
+        selectedItemColor: Colors.green,
         unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.black,
       ),
     );
   }
@@ -446,12 +487,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   void _showSongOptions(Song song) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.grey.shade900,
       builder: (context) {
         return Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.play_arrow),
-              title: const Text('Phát bài hát'),
+              leading: const Icon(Icons.play_arrow, color: Colors.white),
+              title: const Text('Phát', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 int index = playlistSongs.indexOf(song);
@@ -468,23 +510,17 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.playlist_add),
-              title: const Text('Thêm vào danh sách phát khác'),
+              leading: const Icon(Icons.playlist_add, color: Colors.white),
+              title: const Text('Thêm vào danh sách phát khác', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
-                // Hiển thị dialog chọn playlist khác
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Tính năng đang phát triển'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+                _showAddToOtherPlaylistDialog(song);
               },
             ),
             if (!widget.playlist.isSystem)
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Xóa khỏi danh sách phát'),
+                title: const Text('Xóa khỏi danh sách phát', style: TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.pop(context);
                   setState(() {
@@ -564,7 +600,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF31C934),
+              backgroundColor: Colors.green,
             ),
             child: const Text('Lưu'),
           ),
