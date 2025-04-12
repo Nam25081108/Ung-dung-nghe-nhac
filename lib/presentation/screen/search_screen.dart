@@ -100,7 +100,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   if (_filteredSongs.isNotEmpty)
                     Text(
-                      'Tổng: ${_filteredSongs.length} bài hát',
+                      '${_filteredSongs.length} bài hát',
                       style: TextStyle(color: Colors.grey),
                     ),
                 ],

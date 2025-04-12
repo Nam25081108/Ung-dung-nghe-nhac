@@ -300,21 +300,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   const SizedBox(height: 20),
                   Row(
                     children: [
-                      // Nút tải xuống (Ví dụ từ hình)
-                      CircleAvatar(
-                        radius: 22,
-                        backgroundColor: Colors.grey.shade800,
-                        child: const Icon(Icons.download, color: Colors.white, size: 20),
-                      ),
-                      const SizedBox(width: 16),
-                      // Nút shuffle (Ví dụ từ hình)
-                      CircleAvatar(
-                        radius: 22,
-                        backgroundColor: Colors.grey.shade800,
-                        child: const Icon(Icons.shuffle, color: Colors.white, size: 20),
-                      ),
-                      const SizedBox(width: 16),
-                      // Nút phát
+                      // Xóa nút tải xuống và phát ngẫu nhiên
+                      // Chỉ giữ lại nút phát
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: _playAllSongs,
