@@ -261,6 +261,46 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     return "${twoDigits(duration.inMinutes)}:${twoDigits(duration.inSeconds % 60)}";
   }
 
+  // Thêm phương thức để cập nhật danh sách phát yêu thích
+  void _updateFavoritePlaylist() {
+    // Lấy tất cả các bài hát được đánh dấu là yêu thích
+    List<Song> favoriteSongs = widget.songList.where((s) => s.isFavorite).toList();
+    List<int> favoriteSongIds = favoriteSongs.map((song) => song.id).toList();
+    
+    // Tìm và cập nhật playlist "Yêu thích của tôi" trong globalPlaylistList
+    for (int i = 0; i < globalPlaylistList.length; i++) {
+      if (globalPlaylistList[i].id == 'playlist_my_favorites') {
+        globalPlaylistList[i] = Playlist(
+          id: 'playlist_my_favorites',
+          name: 'Yêu thích của tôi',
+          coverImage: 'assets/images/favorite_playlist.jpg',
+          songIds: favoriteSongIds,
+          isSystem: true,
+        );
+        break;
+      }
+    }
+  }
+
+  void _toggleFavorite() {
+    setState(() {
+      _currentSong.isFavorite = !_currentSong.isFavorite;
+      
+      // Cập nhật danh sách phát yêu thích
+      _updateFavoritePlaylist();
+    });
+
+    // Hiển thị thông báo
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_currentSong.isFavorite
+            ? 'Đã thêm vào danh sách yêu thích'
+            : 'Đã xóa khỏi danh sách yêu thích'),
+        duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _audioPlayer.dispose();
@@ -366,25 +406,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {
-                      final wasFavorite = _currentSong.isFavorite;
-                      setState(() {
-                        _currentSong.isFavorite = !wasFavorite;
-                        widget.songList[_currentIndex].isFavorite =
-                            _currentSong.isFavorite;
-                      });
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            wasFavorite
-                                ? 'Đã xoá khỏi yêu thích'
-                                : 'Đã thêm vào yêu thích',
-                          ),
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
-                    },
+                    onPressed: _toggleFavorite,
                     icon: Icon(
                       _currentSong.isFavorite
                           ? Icons.favorite

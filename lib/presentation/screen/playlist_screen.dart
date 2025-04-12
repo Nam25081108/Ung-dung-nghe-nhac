@@ -38,8 +38,10 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       // Lọc chỉ lấy danh sách yêu thích và danh sách do người dùng tạo
       _localPlaylistList = globalPlaylistList
           .where((playlist) => 
-              (playlist.isSystem && playlist.id == 'playlist_my_favorites') || // Chỉ lấy danh sách yêu thích
-              (!playlist.isSystem) // Lấy tất cả danh sách do người dùng tạo
+              // Chỉ lấy danh sách yêu thích từ các danh sách hệ thống
+              playlist.id == 'playlist_my_favorites' || 
+              // Lấy các danh sách phát do người dùng tự tạo (ID chứa timestamp)
+              (!playlist.isSystem || (playlist.id.contains('_') && playlist.id.split('_').last.length > 8))
           )
           .toList();
     });
