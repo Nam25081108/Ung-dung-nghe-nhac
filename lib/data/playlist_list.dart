@@ -22,7 +22,7 @@ final List<Playlist> playlistList = [
     id: 'playlist_my_favorites',
     name: 'Yêu thích của tôi',
     coverImage: 'assets/images/favorite_playlist.jpg',
-    songIds: [1, 3, 5, 8],
+    songIds: [], // Không hardcode bài hát, sẽ được cập nhật từ danh sách bài hát yêu thích
     isSystem: true,
   ),
   Playlist(
@@ -37,18 +37,21 @@ final List<Playlist> playlistList = [
     name: 'Top Hits Việt Nam',
     coverImage: 'assets/images/top_hits.jpg',
     songIds: [1, 2, 3, 4, 5],
+    isSystem: true,
   ),
   Playlist(
     id: 'playlist_ballad',
     name: 'Ballad Việt',
     coverImage: 'assets/images/ballad.jpg',
     songIds: [3, 5, 7, 9],
+    isSystem: true,
   ),
   Playlist(
     id: 'playlist_rap_viet',
     name: 'Rap Việt',
     coverImage: 'assets/images/rap_viet.jpg',
     songIds: [2, 3, 8],
+    isSystem: true,
   ),
 ];
 

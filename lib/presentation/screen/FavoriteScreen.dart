@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:t4/data/song_list.dart';
+import 'package:t4/data/playlist_list.dart';
 import 'package:t4/presentation/screen/home_screen.dart';
 import 'now_playing_screen.dart';
 import 'search_screen.dart';
@@ -26,6 +27,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     super.initState();
     favoriteSongs = songList.where((s) => s.isFavorite).toList();
     _loadDurations();
+    _updateFavoritePlaylist();
   }
 
   Future<void> _loadDurations() async {
@@ -54,10 +56,28 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     return "${twoDigits(duration.inMinutes)}:${twoDigits(duration.inSeconds % 60)}";
   }
 
+  void _updateFavoritePlaylist() {
+    List<int> favoriteSongIds = favoriteSongs.map((song) => song.id).toList();
+    
+    for (int i = 0; i < globalPlaylistList.length; i++) {
+      if (globalPlaylistList[i].id == 'playlist_my_favorites') {
+        globalPlaylistList[i] = Playlist(
+          id: 'playlist_my_favorites',
+          name: 'Yêu thích của tôi',
+          coverImage: 'assets/images/favorite_playlist.jpg',
+          songIds: favoriteSongIds,
+          isSystem: true,
+        );
+        break;
+      }
+    }
+  }
+
   void _toggleFavorite(Song song) {
     setState(() {
       song.isFavorite = false;
       favoriteSongs = songList.where((s) => s.isFavorite).toList();
+      _updateFavoritePlaylist();
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
