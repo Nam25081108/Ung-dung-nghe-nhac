@@ -21,8 +21,11 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   @override
   void initState() {
     super.initState();
-    // Sử dụng globalPlaylistList đã được khai báo trong file playlist_list.dart
-    _localPlaylistList = List.from(globalPlaylistList);
+    // Chỉ hiển thị danh sách yêu thích và danh sách tạo bởi người dùng
+    _localPlaylistList = List.from(globalPlaylistList.where((playlist) => 
+      playlist.isSystem && playlist.id == 'playlist_my_favorites' || // Chỉ giữ lại danh sách yêu thích trong các playlist hệ thống
+      !playlist.isSystem // Giữ lại tất cả danh sách do người dùng tạo
+    ));
   }
 
   @override
@@ -30,7 +33,10 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     super.didChangeDependencies();
     // Cập nhật danh sách playlist khi quay lại màn hình này
     setState(() {
-      _localPlaylistList = List.from(globalPlaylistList);
+      _localPlaylistList = List.from(globalPlaylistList.where((playlist) => 
+        playlist.isSystem && playlist.id == 'playlist_my_favorites' || // Chỉ giữ lại danh sách yêu thích trong các playlist hệ thống
+        !playlist.isSystem // Giữ lại tất cả danh sách do người dùng tạo
+      ));
     });
   }
 
