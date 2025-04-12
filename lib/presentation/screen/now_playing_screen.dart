@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:t4/data/song_list.dart';
 import 'package:t4/presentation/screen/lyric_screen.dart';
+import 'package:t4/data/playlist_list.dart';
 import 'dart:math';
 
 class NowPlayingScreen extends StatefulWidget {
@@ -28,6 +29,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = const Duration(seconds: 100); // default ban đầu
   bool _isPlaying = false;
+  bool _isAddedToPlaylist = false; // Trạng thái đã thêm vào danh sách phát chưa
 
   // Thêm trạng thái cho lặp lại và phát ngẫu nhiên
   bool _isRepeatEnabled = false;
@@ -100,6 +102,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
     _currentSong = widget.songList[_currentIndex];
     _initializePlayer(_currentSong.assetPath);
+    // Cập nhật lại trạng thái khi chuyển bài
+    setState(() {
+      _isAddedToPlaylist = false;
+    });
   }
 
   void _playPreviousSong() {
@@ -120,6 +126,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
     _currentSong = widget.songList[_currentIndex];
     _initializePlayer(_currentSong.assetPath);
+    // Cập nhật lại trạng thái khi chuyển bài
+    setState(() {
+      _isAddedToPlaylist = false;
+    });
   }
 
   void _togglePlay() {
@@ -161,9 +171,137 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     );
   }
 
+  void _showAddToPlaylistDialog() {
+    if (_isAddedToPlaylist) {
+      // Nếu đã thêm vào danh sách phát, không làm gì cả
+      return;
+    }
+
+    // Lọc ra các playlist không phải hệ thống
+    List<Playlist> userPlaylists =
+        globalPlaylistList.where((playlist) => !playlist.isSystem).toList();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Thêm vào danh sách phát'),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: userPlaylists.isEmpty
+              ? const Center(child: Text('Chưa có danh sách phát nào'))
+              : ListView.builder(
+                  itemCount: userPlaylists.length,
+                  itemBuilder: (context, index) {
+                    final playlist = userPlaylists[index];
+
+                    return ListTile(
+                      title: Text(playlist.name),
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Image.asset(
+                          playlist.coverImage,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      onTap: () {
+                        // Thêm bài hát vào playlist
+                        if (!playlist.songIds.contains(_currentSong.id)) {
+                          playlist.songIds.add(_currentSong.id);
+
+                          // Cập nhật lại playlist trong danh sách toàn cục
+                          for (int i = 0; i < globalPlaylistList.length; i++) {
+                            if (globalPlaylistList[i].id == playlist.id) {
+                              globalPlaylistList[i] = playlist;
+                              break;
+                            }
+                          }
+
+                          setState(() {
+                            _isAddedToPlaylist = true;
+                          });
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Đã thêm "${_currentSong.title}" vào danh sách phát "${playlist.name}"'),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+
+                          // Đóng dialog sau khi thêm thành công
+                          Navigator.pop(context);
+                        } else {
+                          // Nếu bài hát đã có trong playlist
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Bài hát "${_currentSong.title}" đã có trong danh sách phát này'),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  },
+                ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     return "${twoDigits(duration.inMinutes)}:${twoDigits(duration.inSeconds % 60)}";
+  }
+
+  // Thêm phương thức để cập nhật danh sách phát yêu thích
+  void _updateFavoritePlaylist() {
+    // Lấy tất cả các bài hát được đánh dấu là yêu thích
+    List<Song> favoriteSongs =
+        widget.songList.where((s) => s.isFavorite).toList();
+    List<int> favoriteSongIds = favoriteSongs.map((song) => song.id).toList();
+
+    // Tìm và cập nhật playlist "Yêu thích của tôi" trong globalPlaylistList
+    for (int i = 0; i < globalPlaylistList.length; i++) {
+      if (globalPlaylistList[i].id == 'playlist_my_favorites') {
+        globalPlaylistList[i] = Playlist(
+          id: 'playlist_my_favorites',
+          name: 'Yêu thích của tôi',
+          coverImage: 'assets/favarite_playlist.png',
+          songIds: favoriteSongIds,
+          isSystem: true,
+        );
+        break;
+      }
+    }
+  }
+
+  void _toggleFavorite() {
+    setState(() {
+      _currentSong.isFavorite = !_currentSong.isFavorite;
+
+      // Cập nhật danh sách phát yêu thích
+      _updateFavoritePlaylist();
+    });
+
+    // Hiển thị thông báo
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_currentSong.isFavorite
+            ? 'Đã thêm vào danh sách yêu thích'
+            : 'Đã xóa khỏi danh sách yêu thích'),
+        duration: const Duration(seconds: 1),
+      ),
+    );
   }
 
   @override
@@ -199,8 +337,15 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.more_vert, color: Colors.white),
-                    onPressed: () {},
+                    icon: Icon(
+                      _isAddedToPlaylist
+                          ? Icons.check_circle
+                          : Icons.add_circle,
+                      color: _isAddedToPlaylist
+                          ? const Color(0xFF31C934)
+                          : Colors.white,
+                    ),
+                    onPressed: _showAddToPlaylistDialog,
                   ),
                 ],
               ),
@@ -264,25 +409,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {
-                      final wasFavorite = _currentSong.isFavorite;
-                      setState(() {
-                        _currentSong.isFavorite = !wasFavorite;
-                        widget.songList[_currentIndex].isFavorite =
-                            _currentSong.isFavorite;
-                      });
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            wasFavorite
-                                ? 'Đã xoá khỏi yêu thích'
-                                : 'Đã thêm vào yêu thích',
-                          ),
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
-                    },
+                    onPressed: _toggleFavorite,
                     icon: Icon(
                       _currentSong.isFavorite
                           ? Icons.favorite

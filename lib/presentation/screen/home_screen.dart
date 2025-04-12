@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:t4/data/song_list.dart';
-import 'package:t4/presentation/screen/FavoriteScreen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
+import 'package:t4/presentation/screen/album_screen.dart';
+import 'package:t4/presentation/screen/playlist_screen.dart';
 import 'now_playing_screen.dart';
+import 'dart:math';
+import 'package:t4/presentation/screen/ProfileScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,11 +24,6 @@ class _HomeScreenState extends State<HomeScreen> {
   // Danh sách album
   late List<Song> _popularAlbums = [];
 
-  // Phân trang hiển thị
-  int _maxDisplayItems = 5; // Hiển thị 5 bài/album đầu tiên
-  bool _showAllRecommended = false;
-  bool _showAllAlbums = false;
-
   bool _isLoading = true;
 
   @override
@@ -37,9 +35,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _loadSongs() {
+    // Tạo một danh sách riêng biệt từ songList để có thể xáo trộn
+    List<Song> shuffledSongs = List.from(songList);
+    // Xáo trộn danh sách
+    shuffledSongs.shuffle(Random());
+
+    // Lấy 6 bài hát đầu tiên sau khi xáo trộn
+    List<Song> randomSongs = shuffledSongs.take(6).toList();
+
+    // Xáo trộn lại một lần nữa để lấy 6 bài khác cho phần album
+    shuffledSongs.shuffle(Random());
+    List<Song> randomAlbums = shuffledSongs.take(6).toList();
+
     setState(() {
-      _recommendedSongs = songList;
-      _popularAlbums = songList;
+      _recommendedSongs = randomSongs;
+      _popularAlbums = randomAlbums;
       _isLoading = false;
     });
   }
@@ -97,11 +107,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(width: 15),
                           Expanded(
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 _buildTabButton('Tất Cả', 0),
-                                const SizedBox(width: 15),
+                                const SizedBox(width: 8),
                                 _buildTabButton('Album', 1),
-                                const SizedBox(width: 15),
+                                const SizedBox(width: 8),
                                 _buildTabButton('Danh sách phát', 2),
                               ],
                             ),
@@ -109,43 +120,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                       const SizedBox(height: 30),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Được Đề Xuất Cho Hôm Nay',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (_recommendedSongs.length > _maxDisplayItems)
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _showAllRecommended = !_showAllRecommended;
-                                });
-                              },
-                              child: Text(
-                                _showAllRecommended ? 'Thu gọn' : 'Xem thêm',
-                                style: const TextStyle(
-                                  color: Color(0xFF31C934),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                        ],
+                      const Text(
+                        'Được Đề Xuất Cho Hôm Nay',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 15),
                       SizedBox(
                         height: 200,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          itemCount: _showAllRecommended
-                              ? _recommendedSongs.length
-                              : _recommendedSongs.length > _maxDisplayItems
-                                  ? _maxDisplayItems
-                                  : _recommendedSongs.length,
+                          itemCount: _recommendedSongs.length,
                           itemBuilder: (context, index) {
                             final song = _recommendedSongs[index];
                             return Padding(
@@ -168,43 +155,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(height: 25),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Album Và Đĩa Nổi Tiếng',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (_popularAlbums.length > _maxDisplayItems)
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _showAllAlbums = !_showAllAlbums;
-                                });
-                              },
-                              child: Text(
-                                _showAllAlbums ? 'Thu gọn' : 'Xem thêm',
-                                style: const TextStyle(
-                                  color: Color(0xFF31C934),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                        ],
+                      const Text(
+                        'Album Và Đĩa Nổi Tiếng',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 15),
                       SizedBox(
                         height: 200,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          itemCount: _showAllAlbums
-                              ? _popularAlbums.length
-                              : _popularAlbums.length > _maxDisplayItems
-                                  ? _maxDisplayItems
-                                  : _popularAlbums.length,
+                          itemCount: _popularAlbums.length,
                           itemBuilder: (context, index) {
                             final album = _popularAlbums[index];
                             return Padding(
@@ -241,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border),
+            icon: Icon(Icons.person),
             label: '',
           ),
         ],
@@ -257,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // Mở màn hình yêu thích
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => FavoriteScreen()),
+              MaterialPageRoute(builder: (context) => ProfileScreen()),
             );
           } else {
             setState(() {
@@ -277,12 +240,24 @@ class _HomeScreenState extends State<HomeScreen> {
     bool isSelected = _selectedTabIndex == index;
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _selectedTabIndex = index;
-        });
+        if (_selectedTabIndex != index) {
+          setState(() {
+            _selectedTabIndex = index;
+          });
+
+          if (index == 0) {
+            // Đã ở màn hình home, không cần điều hướng
+          } else if (index == 1) {
+            // Chuyển sang màn hình Album
+            Navigator.pushNamed(context, '/album');
+          } else if (index == 2) {
+            // Chuyển sang màn hình Playlist
+            Navigator.pushNamed(context, '/playlist');
+          }
+        }
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF31C934) : Colors.transparent,
           borderRadius: BorderRadius.circular(30),
