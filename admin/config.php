@@ -5,6 +5,7 @@ $FLUTTER_PROJECT_PATH = '../';
 // Đường dẫn đến các file và thư mục
 $SONG_LIST_PATH = $FLUTTER_PROJECT_PATH . 'lib/data/song_list.dart';
 $ALBUM_LIST_PATH = $FLUTTER_PROJECT_PATH . 'lib/data/album_list.dart';
+$ARTISTS_LIST_PATH = $FLUTTER_PROJECT_PATH . 'lib/data/artists_list.dart';
 $AUDIO_ASSETS_PATH = $FLUTTER_PROJECT_PATH . 'assets/audio/';
 $IMAGE_ASSETS_PATH = $FLUTTER_PROJECT_PATH . 'assets/images/';
 

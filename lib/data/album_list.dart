@@ -16,15 +16,15 @@ class Album {
 
 final List<Album> albumList = [
   Album(
-    id: 'album_ronboogz_1744305674',
-    name: 'Ronboogz',
-    coverImage: 'assets/images/album_ronboogz.jpg',
-    songIds: [11, 12, ],
+    id: 'album_ronboogz2_1744479368',
+    name: 'Nam',
+    coverImage: 'assets/images/album_ronboogz2.jpg',
+    songIds: [11, 12, 14, ],
   ),
   Album(
-    id: 'album_1__1744359686',
-    name: '1%',
-    coverImage: 'assets/images/album_1_.jpg',
-    songIds: [2, 3, 13, ],
+    id: 'album_ronboogz1_1744479485',
+    name: 'Ronboogz1',
+    coverImage: 'assets/images/album_ronboogz1.jpg',
+    songIds: [],
   ),
 ];

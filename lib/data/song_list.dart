@@ -204,4 +204,13 @@ Nhưng tim thì vắng lặng...''',
     lyrics: 'ghjghhasda\nsád\n\nád\nád\n\nád',
     album: '1%',
   ),
+  Song(
+    id: 14,
+    title: 'Lan man',
+    artist: 'Ronboogz',
+    coverImage: 'assets/images/lan_man.jpg',
+    assetPath: 'assets/audio/lan_man.mp3',
+    lyrics:
+        '\nEm thức giấc khi đêm muộn,\nQuăng chiếc tất lên trên giường\nNgân nga khúc nhạc em chọn \nChỉ để thiên đường càng thêm buồn\nEm bước chân ra đường \nBỏ lại suy nghĩ trên ga giường\nVà đi đến một nơi \nMà em biết chắc anh đang ở đây\n\nVà anh vốn chỉ là người cũng hay thức \nCố gắng cho lòng mình ngừng day dứt\nDùng cây bút từng giây phút\nAnh chỉ đại trà như người dùng Facebook\nAnh chỉ muốn ngủ ngon giữa đêm \nNhưng lại nhớ màu son của em \n\nVì nắng sẽ chẳng bên cạnh khi ta \nlại để nước mắt rơi\nEm có thấy gió đêm lạnh những lúc niềm đau đó cất lời?\nVì ta luôn luôn đi trễ chỉ trong vài giây để lỡ vòng tay cả đời\nVà anh chẳng muốn chỉ sống như vậy mà thôi \nĐể có em mỗi đêm về khi trên trời cao lắm bóng mây \nNếu mưa cứ rơi hoài thì căn phòng kia vẫn nóng nảy\nTa luôn có thì giờ dù em không muốn mình chờ đợi thêm\nAnh chỉ muốn được sống như vậy mà thôi \n\nĐừng đẩy nhau như nam châm chỉ vì ta trước giờ luôn luôn cùng cực \nAnh chỉ viết ra thang âm khi nhiều thứ vẫn kìm nén trong lòng ngực mình \nBao nhiêu suy nghĩ như cực hình, khiến em bực mình\nVậy thì thứ mà em cần đến là một cuộc tình\n\nAnh chỉ muốn dạo phố mỗi tối, khi niềm đau lên ngôi \nNên em đừng cố nói dối với từng câu trên môi \nNhững ai luôn tệ khi khiến em tuôn lệ \nChúng ta quên cách để buông nhẹ\nVậy thì ta sẽ biết điều đó trên đoạn đường về \n\nVì nắng sẽ chẳng bên cạnh khi ta \nlại để nước mắt rơi\nEm có thấy gió đêm lạnh những lúc niềm đau đó cất lời?\nVì ta luôn luôn đi trễ chỉ trong vài giây để lỡ vòng tay cả đời\nVà anh chẳng muốn chỉ sống như vậy mà thôi \nĐể có em mỗi đêm về khi trên trời cao lắm bóng mây \nNếu mưa cứ rơi hoài thì căn phòng kia vẫn nóng nảy\nTa luôn có thì giờ dù em không muốn mình chờ đợi thêm\nAnh chỉ muốn được sống như vậy mà thôi \n\nChỉ muốn cùng em đón ngọn gió đêm về\nEm như mặt trăng khi anh ở đâu thì anh cũng có em kề\nChỉ muốn cùng em say sưa vài lon\nUống cho đêm dài hơn\nMuốn say thêm vài cơn cùng em \n\nVì nắng sẽ chẳng bên cạnh khi em \nlại để nước mắt rơi\nEm có thấy gió đêm lạnh những lúc niềm đau đó cất lời?\nVì ta luôn luôn đi trễ chỉ trong vài giây để lỡ vòng tay cả đời\nVà anh chẳng muốn chỉ sống như vậy mà thôi \nĐể có em mỗi đêm về khi trên trời cao lắm bóng mây \nNếu mưa cứ rơi hoài thì căn phòng kia vẫn nóng nảy\nTa luôn có thì giờ dù em không muốn mình chờ đợi thêm\nAnh chỉ muốn được sống như vậy mà thôi',
+  ),
 ];

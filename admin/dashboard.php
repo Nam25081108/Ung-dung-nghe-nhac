@@ -68,8 +68,44 @@ function getAlbums() {
     return $albums;
 }
 
+// Đọc danh sách nghệ sĩ từ file artists_list.dart
+function getArtists() {
+    global $ARTISTS_LIST_PATH;
+    
+    $artists = [];
+    if (file_exists($ARTISTS_LIST_PATH)) {
+        $content = file_get_contents($ARTISTS_LIST_PATH);
+        
+        // Sử dụng regex để trích xuất thông tin nghệ sĩ
+        preg_match_all('/Artist\(\s*id:\s*\'(.*?)\',\s*name:\s*\'(.*?)\',\s*image:\s*\'(.*?)\',\s*songIds:\s*\[(.*?)\],?\s*\)/s', $content, $matches, PREG_SET_ORDER);
+        
+        foreach ($matches as $match) {
+            // Trích xuất các ID bài hát từ mảng songIds
+            $songIds = [];
+            if (!empty($match[4])) {
+                preg_match_all('/(\d+)/', $match[4], $songMatches);
+                if (isset($songMatches[1])) {
+                    foreach ($songMatches[1] as $id) {
+                        $songIds[] = (int)$id;
+                    }
+                }
+            }
+            
+            $artists[] = [
+                'id' => $match[1],
+                'name' => $match[2],
+                'image' => $match[3],
+                'songIds' => $songIds
+            ];
+        }
+    }
+    
+    return $artists;
+}
+
 $songs = getSongs();
 $albums = getAlbums();
+$artists = getArtists();
 
 // Hiển thị thông báo thành công nếu có
 $success = isset($_GET['success']) ? $_GET['success'] : '';
@@ -115,11 +151,15 @@ if ($success === 'add') {
             <button class="tab-btn active" data-tab="add-song">Thêm bài hát</button>
             <button class="tab-btn" data-tab="song-list">Danh sách bài hát</button>
             <button class="tab-btn" data-tab="album-manager">Quản lý Album</button>
+            <button class="tab-btn" data-tab="artist-manager">Quản lý Nghệ sĩ</button>
             <?php if (isset($_GET['edit'])): ?>
             <button class="tab-btn" data-tab="edit-song" id="edit-tab">Sửa bài hát</button>
             <?php endif; ?>
             <?php if (isset($_GET['edit_album'])): ?>
             <button class="tab-btn" data-tab="edit-album" id="edit-album-tab">Sửa album</button>
+            <?php endif; ?>
+            <?php if (isset($_GET['edit_artist'])): ?>
+            <button class="tab-btn" data-tab="edit-artist" id="edit-artist-tab">Sửa nghệ sĩ</button>
             <?php endif; ?>
         </div>
         
@@ -291,6 +331,77 @@ if ($success === 'add') {
             </div>
         </div>
         
+        <div class="tab-content" id="artist-manager">
+            <h2>Quản lý Nghệ sĩ</h2>
+            
+            <div class="artist-create-form">
+                <h3>Thêm Nghệ sĩ mới</h3>
+                <form method="post" action="artist_actions.php" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="add">
+                    
+                    <div class="form-group">
+                        <label for="artist_name">Tên nghệ sĩ</label>
+                        <input type="text" id="artist_name" name="artist_name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="artist_image">Hình ảnh nghệ sĩ</label>
+                        <input type="file" id="artist_image" name="artist_image" accept="image/*" required>
+                        <div class="preview-artist-image">
+                            <img src="#" alt="Preview" style="display: none;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Chọn bài hát của nghệ sĩ</label>
+                        <div class="song-search">
+                            <input type="text" id="artist-song-search" placeholder="Tìm bài hát..." class="search-input">
+                        </div>
+                        <div class="song-selection">
+                            <?php foreach ($songs as $index => $song): ?>
+                            <div class="song-checkbox">
+                                <input type="checkbox" id="artist_song_<?php echo $index; ?>" name="selected_songs[]" value="<?php echo $index; ?>">
+                                <label for="artist_song_<?php echo $index; ?>" class="song-item">
+                                    <?php echo $song['title']; ?>
+                                </label>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn">Thêm Nghệ sĩ</button>
+                </form>
+            </div>
+            
+            <div class="artist-list">
+                <h3>Danh sách Nghệ sĩ</h3>
+                <?php if (empty($artists)): ?>
+                <p>Chưa có nghệ sĩ nào.</p>
+                <?php else: ?>
+                <div class="artists-grid">
+                    <?php foreach ($artists as $artist): ?>
+                    <div class="artist-card">
+                        <img src="<?php echo $FLUTTER_PROJECT_PATH . $artist['image']; ?>" alt="<?php echo $artist['name']; ?>" class="artist-list-image">
+                        <h4><?php echo $artist['name']; ?></h4>
+                        <div class="artist-actions">
+                            <form method="post" action="artist_actions.php" class="inline-form">
+                                <input type="hidden" name="action" value="edit_form">
+                                <input type="hidden" name="artist_id" value="<?php echo $artist['id']; ?>">
+                                <button type="submit" class="btn btn-small btn-edit">Sửa</button>
+                            </form>
+                            <form method="post" action="artist_actions.php" onsubmit="return confirm('Bạn có chắc chắn muốn xóa nghệ sĩ này?');" class="inline-form">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="artist_id" value="<?php echo $artist['id']; ?>">
+                                <button type="submit" class="btn btn-small btn-delete">Xóa</button>
+                            </form>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        
         <?php if (isset($_GET['edit']) && isset($_GET['index'])): ?>
         <div class="tab-content <?php echo isset($_GET['edit']) ? 'active' : ''; ?>" id="edit-song">
             <h2>Sửa bài hát</h2>
@@ -405,6 +516,67 @@ if ($success === 'add') {
             <?php endif; ?>
         </div>
         <?php endif; ?>
+        
+        <?php if (isset($_GET['edit_artist'])): ?>
+        <div class="tab-content" id="edit-artist">
+            <h2>Sửa thông tin nghệ sĩ</h2>
+            <?php
+            $artist_id = $_GET['edit_artist'];
+            $artist = null;
+            foreach ($artists as $a) {
+                if ($a['id'] === $artist_id) {
+                    $artist = $a;
+                    break;
+                }
+            }
+            
+            if ($artist):
+            ?>
+            <form method="post" action="artist_actions.php" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="artist_id" value="<?php echo $artist['id']; ?>">
+                
+                <div class="form-group">
+                    <label for="artist_name">Tên nghệ sĩ</label>
+                    <input type="text" id="artist_name" name="artist_name" value="<?php echo $artist['name']; ?>" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="artist_image">Hình ảnh nghệ sĩ (chỉ chọn nếu muốn thay đổi)</label>
+                    <input type="file" id="artist_image" name="artist_image" accept="image/*">
+                    <div class="current-file">
+                        Hình ảnh hiện tại: <?php echo basename($artist['image']); ?>
+                    </div>
+                    <div class="preview-artist-image">
+                        <img src="<?php echo $FLUTTER_PROJECT_PATH . $artist['image']; ?>" alt="<?php echo $artist['name']; ?>">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Chọn bài hát của nghệ sĩ</label>
+                    <div class="song-search">
+                        <input type="text" id="artist-song-search" placeholder="Tìm bài hát..." class="search-input">
+                    </div>
+                    <div class="song-selection">
+                        <?php foreach ($songs as $index => $song): ?>
+                        <div class="song-checkbox">
+                            <input type="checkbox" id="artist_song_<?php echo $index; ?>" name="selected_songs[]" value="<?php echo $index; ?>" <?php echo in_array($index, $artist['songIds']) ? 'checked' : ''; ?>>
+                            <label for="artist_song_<?php echo $index; ?>" class="song-item">
+                                <?php echo $song['title']; ?>
+                            </label>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn">Cập nhật</button>
+                <a href="dashboard.php" class="btn btn-cancel">Hủy</a>
+            </form>
+            <?php else: ?>
+            <p>Không tìm thấy nghệ sĩ.</p>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
     </div>
     
     <script>
@@ -462,6 +634,23 @@ if ($success === 'add') {
         
         // Thiết lập tìm kiếm cho form sửa album
         setupSearch('edit-song-search', '#edit-album .song-selection');
+        
+        // Preview ảnh nghệ sĩ khi chọn file
+        document.querySelectorAll('input[type="file"][accept="image/*"]').forEach(input => {
+            input.addEventListener('change', function(e) {
+                const preview = this.parentElement.querySelector('.preview-artist-image img');
+                if (preview) {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            preview.src = e.target.result;
+                            preview.style.display = 'block';
+                        }
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>
