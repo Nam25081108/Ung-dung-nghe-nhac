@@ -38,12 +38,13 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     setState(() {
       // Lọc chỉ lấy danh sách yêu thích và danh sách do người dùng tạo
       _localPlaylistList = globalPlaylistList
-          .where((playlist) => 
+          .where((playlist) =>
               // Chỉ lấy danh sách yêu thích từ các danh sách hệ thống
-              playlist.id == 'playlist_my_favorites' || 
+              playlist.id == 'playlist_my_favorites' ||
               // Lấy các danh sách phát do người dùng tự tạo (ID chứa timestamp)
-              (!playlist.isSystem || (playlist.id.contains('_') && playlist.id.split('_').last.length > 8))
-          )
+              (!playlist.isSystem ||
+                  (playlist.id.contains('_') &&
+                      playlist.id.split('_').last.length > 8)))
           .toList();
     });
   }
@@ -125,7 +126,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                           id: 0,
                           title: '',
                           artist: 'Không xác định',
-                          coverImage: 'assets/images/default_playlist.jpg',
+                          coverImage: 'assets/default_playlist.png',
                           assetPath: '',
                           lyrics: '',
                         ),
@@ -280,15 +281,14 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 final newPlaylist = Playlist(
                   id: newId,
                   name: name,
-                  coverImage:
-                      'assets/images/default_playlist.jpg', // Ảnh mặc định
+                  coverImage: 'assets/default_playlist.png', // Ảnh mặc định
                   songIds: [], // Chưa có bài hát nào
                   isSystem: false, // Playlist người dùng tạo
                 );
 
                 // Thêm vào biến toàn cục
                 globalPlaylistList.add(newPlaylist);
-                
+
                 // Cập nhật danh sách cục bộ ngay lập tức
                 _updateLocalPlaylistList();
 
@@ -351,7 +351,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
 
   Widget _buildPlaylistListItem(Playlist playlist, String coverImage) {
     List<Song> songs = getPlaylistSongs(playlist);
-    
+
     return GestureDetector(
       onTap: () {
         // Khi bấm vào playlist sẽ mở trang chi tiết playlist
@@ -456,7 +456,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Danh sách phát "${playlist.name}" không có bài hát nào'),
+                          content: Text(
+                              'Danh sách phát "${playlist.name}" không có bài hát nào'),
                           duration: const Duration(seconds: 2),
                         ),
                       );
