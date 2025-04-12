@@ -69,13 +69,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _updateFavoritePlaylist() {
     List<int> favoriteSongIds = favoriteSongs.map((song) => song.id).toList();
-    
+
     for (int i = 0; i < globalPlaylistList.length; i++) {
       if (globalPlaylistList[i].id == 'playlist_my_favorites') {
         globalPlaylistList[i] = Playlist(
           id: 'playlist_my_favorites',
           name: 'Yêu thích của tôi',
-          coverImage: 'assets/images/favorite_playlist.jpg',
+          coverImage: 'assets/favorite_playlist.png',
           songIds: favoriteSongIds,
           isSystem: true,
         );
@@ -88,7 +88,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Lấy danh sách playlist do người dùng tạo (không phải hệ thống)
     setState(() {
       userPlaylists = globalPlaylistList
-          .where((playlist) => !playlist.isSystem || playlist.id == 'playlist_my_favorites')
+          .where((playlist) =>
+              !playlist.isSystem || playlist.id == 'playlist_my_favorites')
           .toList();
     });
   }
@@ -131,11 +132,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (user != null && _usernameController.text.trim().isNotEmpty) {
       try {
         await user!.updateDisplayName(_usernameController.text.trim());
-        
+
         setState(() {
           // Cập nhật UI
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Tên người dùng đã được cập nhật')),
         );
@@ -265,7 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
-              
+
               // Phần Playlists
               Padding(
                 padding: const EdgeInsets.all(20),
@@ -331,17 +332,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         : ListView.builder(
                             shrinkWrap: true,
                             physics: NeverScrollableScrollPhysics(),
-                            itemCount: userPlaylists.length > 2 ? 2 : userPlaylists.length,
+                            itemCount: userPlaylists.length > 2
+                                ? 2
+                                : userPlaylists.length,
                             itemBuilder: (context, index) {
                               final playlist = userPlaylists[index];
                               // Lấy danh sách bài hát trong playlist
                               List<Song> songs = getPlaylistSongs(playlist);
                               String coverImage = playlist.coverImage;
-                              
-                              if (songs.isNotEmpty && coverImage.contains('default_playlist')) {
+
+                              if (songs.isNotEmpty &&
+                                  coverImage.contains('default_playlist')) {
                                 coverImage = songs.first.coverImage;
                               }
-                              
+
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 16.0),
                                 child: InkWell(
@@ -349,7 +353,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => PlaylistDetailScreen(
+                                        builder: (context) =>
+                                            PlaylistDetailScreen(
                                           playlist: playlist,
                                         ),
                                       ),
@@ -369,7 +374,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               playlist.name,
@@ -403,7 +409,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => NowPlayingScreen(
+                                                builder: (context) =>
+                                                    NowPlayingScreen(
                                                   song: songs[0],
                                                   songList: songs,
                                                   initialIndex: 0,

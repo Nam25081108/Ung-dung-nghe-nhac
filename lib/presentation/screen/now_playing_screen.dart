@@ -225,18 +225,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Đã thêm "${_currentSong.title}" vào danh sách phát "${playlist.name}"'),
+                              content: Text(
+                                  'Đã thêm "${_currentSong.title}" vào danh sách phát "${playlist.name}"'),
                               duration: const Duration(seconds: 2),
                             ),
                           );
-                          
+
                           // Đóng dialog sau khi thêm thành công
                           Navigator.pop(context);
                         } else {
                           // Nếu bài hát đã có trong playlist
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Bài hát "${_currentSong.title}" đã có trong danh sách phát này'),
+                              content: Text(
+                                  'Bài hát "${_currentSong.title}" đã có trong danh sách phát này'),
                               duration: const Duration(seconds: 2),
                             ),
                           );
@@ -264,16 +266,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   // Thêm phương thức để cập nhật danh sách phát yêu thích
   void _updateFavoritePlaylist() {
     // Lấy tất cả các bài hát được đánh dấu là yêu thích
-    List<Song> favoriteSongs = widget.songList.where((s) => s.isFavorite).toList();
+    List<Song> favoriteSongs =
+        widget.songList.where((s) => s.isFavorite).toList();
     List<int> favoriteSongIds = favoriteSongs.map((song) => song.id).toList();
-    
+
     // Tìm và cập nhật playlist "Yêu thích của tôi" trong globalPlaylistList
     for (int i = 0; i < globalPlaylistList.length; i++) {
       if (globalPlaylistList[i].id == 'playlist_my_favorites') {
         globalPlaylistList[i] = Playlist(
           id: 'playlist_my_favorites',
           name: 'Yêu thích của tôi',
-          coverImage: 'assets/images/favorite_playlist.jpg',
+          coverImage: 'assets/favarite_playlist.png',
           songIds: favoriteSongIds,
           isSystem: true,
         );
@@ -285,7 +288,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   void _toggleFavorite() {
     setState(() {
       _currentSong.isFavorite = !_currentSong.isFavorite;
-      
+
       // Cập nhật danh sách phát yêu thích
       _updateFavoritePlaylist();
     });
