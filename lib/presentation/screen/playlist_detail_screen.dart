@@ -57,88 +57,101 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(builder: (context, setState) {
-        return AlertDialog(
-          title: const Text('Thêm bài hát'),
-          content: SizedBox(
-            width: double.maxFinite,
-            height: 300,
-            child: availableSongs.isEmpty
-                ? const Center(child: Text('Không có bài hát nào khả dụng'))
-                : ListView.builder(
-                    itemCount: availableSongs.length,
-                    itemBuilder: (context, index) {
-                      final song = availableSongs[index];
-                      final isSelected = selectedSongIds.contains(song.id);
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Thêm bài hát vào danh sách phát'),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: 400,
+              child: availableSongs.isEmpty
+                  ? const Center(child: Text('Không có bài hát nào khả dụng'))
+                  : ListView.builder(
+                      itemCount: availableSongs.length,
+                      itemBuilder: (context, index) {
+                        final song = availableSongs[index];
+                        final isSelected = selectedSongIds.contains(song.id);
 
-                      return CheckboxListTile(
-                        title: Text(song.title),
-                        subtitle: Text(song.artist),
-                        secondary: Image.asset(
-                          song.coverImage,
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                        ),
-                        value: isSelected,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            if (value == true) {
-                              selectedSongIds.add(song.id);
-                            } else {
-                              selectedSongIds.remove(song.id);
-                            }
-                          });
-                        },
-                      );
-                    },
-                  ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Hủy'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (selectedSongIds.isNotEmpty) {
-                  // Thêm các bài hát đã chọn vào playlist
-                  // Trong ứng dụng thực tế, bạn sẽ cập nhật DB hoặc lưu trạng thái
-                  widget.playlist.songIds.addAll(selectedSongIds);
-
-                  // Cập nhật globalPlaylistList
-                  for (int i = 0; i < globalPlaylistList.length; i++) {
-                    if (globalPlaylistList[i].id == widget.playlist.id) {
-                      // Đã tìm thấy playlist cần cập nhật
-                      globalPlaylistList[i] = widget.playlist;
-                      break;
-                    }
-                  }
-
-                  // Cập nhật danh sách bài hát hiển thị
-                  setState(() {
-                    _loadPlaylistSongs();
-                  });
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          'Đã thêm ${selectedSongIds.length} bài hát vào danh sách phát'),
-                      duration: const Duration(seconds: 2),
+                        return CheckboxListTile(
+                          title: Text(song.title),
+                          subtitle: Text(song.artist),
+                          secondary: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.asset(
+                              song.coverImage,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          value: isSelected,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              if (value == true) {
+                                selectedSongIds.add(song.id);
+                              } else {
+                                selectedSongIds.remove(song.id);
+                              }
+                            });
+                          },
+                        );
+                      },
                     ),
-                  );
-                }
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF31C934),
-              ),
-              child: const Text('Thêm'),
             ),
-          ],
-        );
-      }),
-    );
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (selectedSongIds.isNotEmpty) {
+                    // Thêm các bài hát đã chọn vào playlist
+                    for (int songId in selectedSongIds) {
+                      if (!widget.playlist.songIds.contains(songId)) {
+                        widget.playlist.songIds.add(songId);
+                      }
+                    }
+
+                    // Cập nhật playlist trong danh sách toàn cục
+                    for (int i = 0; i < globalPlaylistList.length; i++) {
+                      if (globalPlaylistList[i].id == widget.playlist.id) {
+                        globalPlaylistList[i] = widget.playlist;
+                        break;
+                      }
+                    }
+
+                    // Cập nhật UI
+                    setState(() {
+                      _loadPlaylistSongs();
+                    });
+
+                    // Hiển thị thông báo
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            'Đã thêm ${selectedSongIds.length} bài hát vào danh sách phát'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF31C934),
+                ),
+                child: const Text('Thêm'),
+              ),
+            ],
+          );
+        },
+      ),
+    ).then((_) {
+      // Cập nhật UI sau khi dialog đóng
+      this.setState(() {
+        _loadPlaylistSongs();
+      });
+    });
   }
 
   @override
