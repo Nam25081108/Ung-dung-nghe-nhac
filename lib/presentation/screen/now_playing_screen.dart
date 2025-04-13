@@ -4,6 +4,9 @@ import 'package:t4/data/song_list.dart';
 import 'package:t4/presentation/screen/lyric_screen.dart';
 import 'package:t4/data/playlist_list.dart';
 import 'dart:math';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:t4/data/recently_played.dart';
+import 'package:t4/data/user_settings.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   final Song song;
@@ -41,6 +44,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     _audioPlayer = AudioPlayer();
     _currentIndex = widget.initialIndex;
     _currentSong = widget.song;
+    
+    // Áp dụng cài đặt người dùng
+    _applyUserSettings();
+    
     _initializePlayer(_currentSong.assetPath);
 
     // Nghe sự kiện thời lượng và vị trí
@@ -79,6 +86,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       setState(() {
         _isPlaying = true;
       });
+      
+      // Thêm bài hát vào lịch sử phát gần đây
+      final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+      if (currentUserId != null) {
+        addToRecentlyPlayed(_currentSong.id, currentUserId);
+        updateRecentlyPlayedPlaylist(currentUserId);
+      }
     } catch (e) {
       print('Lỗi khi tải file audio: $e');
     }
@@ -148,6 +162,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       _isRepeatEnabled = !_isRepeatEnabled;
     });
 
+    // Lưu cài đặt người dùng
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId != null) {
+      UserSettings settings = getUserSettings(currentUserId);
+      settings.repeatByDefault = _isRepeatEnabled;
+      updateUserSettings(settings);
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(_isRepeatEnabled ? 'Đã bật lặp lại' : 'Đã tắt lặp lại'),
@@ -161,6 +183,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       _isShuffleEnabled = !_isShuffleEnabled;
     });
 
+    // Lưu cài đặt người dùng
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId != null) {
+      UserSettings settings = getUserSettings(currentUserId);
+      settings.shuffleByDefault = _isShuffleEnabled;
+      updateUserSettings(settings);
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(_isShuffleEnabled
@@ -172,14 +202,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   }
 
   void _showAddToPlaylistDialog() {
-    if (_isAddedToPlaylist) {
-      // Nếu đã thêm vào danh sách phát, không làm gì cả
-      return;
-    }
-
-    // Lọc ra các playlist không phải hệ thống
+    // Lấy ID của người dùng hiện tại
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    
+    // Lọc ra các playlist không phải hệ thống và thuộc về người dùng hiện tại
     List<Playlist> userPlaylists =
-        globalPlaylistList.where((playlist) => !playlist.isSystem).toList();
+        globalPlaylistList.where((playlist) => 
+          !playlist.isSystem && playlist.userId == currentUserId
+        ).toList();
 
     showDialog(
       context: context,
@@ -265,29 +295,92 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   // Thêm phương thức để cập nhật danh sách phát yêu thích
   void _updateFavoritePlaylist() {
-    // Lấy tất cả các bài hát được đánh dấu là yêu thích
-    List<Song> favoriteSongs =
-        widget.songList.where((s) => s.isFavorite).toList();
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) return;
+
+    // Lấy danh sách các bài hát yêu thích của người dùng hiện tại
+    List<Song> favoriteSongs = getFavoriteSongs(currentUserId);
     List<int> favoriteSongIds = favoriteSongs.map((song) => song.id).toList();
 
     // Tìm và cập nhật playlist "Yêu thích của tôi" trong globalPlaylistList
+    bool hasPersonalFavorites = false;
+    int existingFavoritesIndex = -1;
+    
     for (int i = 0; i < globalPlaylistList.length; i++) {
-      if (globalPlaylistList[i].id == 'playlist_my_favorites') {
-        globalPlaylistList[i] = Playlist(
+      if (globalPlaylistList[i].id == 'playlist_my_favorites' && 
+          globalPlaylistList[i].userId == currentUserId) {
+        hasPersonalFavorites = true;
+        existingFavoritesIndex = i;
+        break;
+      }
+    }
+    
+    if (hasPersonalFavorites) {
+      // Cập nhật danh sách yêu thích hiện có của người dùng
+      globalPlaylistList[existingFavoritesIndex] = Playlist(
+        id: 'playlist_my_favorites',
+        name: 'Yêu thích của tôi',
+        coverImage: 'assets/favorite_playlist.png',
+        songIds: favoriteSongIds,
+        isSystem: true,
+        userId: currentUserId,
+      );
+    } else {
+      // Tạo một danh sách yêu thích mới cho người dùng hiện tại
+      bool foundDefaultFavorites = false;
+      for (int i = 0; i < globalPlaylistList.length; i++) {
+        if (globalPlaylistList[i].id == 'playlist_my_favorites' && 
+            globalPlaylistList[i].userId == null) {
+          // Cập nhật playlist mặc định để thuộc về người dùng hiện tại
+          globalPlaylistList[i] = Playlist(
+            id: 'playlist_my_favorites',
+            name: 'Yêu thích của tôi',
+            coverImage: 'assets/favorite_playlist.png',
+            songIds: favoriteSongIds,
+            isSystem: true,
+            userId: currentUserId,
+          );
+          foundDefaultFavorites = true;
+          break;
+        }
+      }
+      
+      if (!foundDefaultFavorites) {
+        // Tạo mới hoàn toàn nếu không tìm thấy playlist mặc định
+        globalPlaylistList.add(Playlist(
           id: 'playlist_my_favorites',
           name: 'Yêu thích của tôi',
-          coverImage: 'assets/favarite_playlist.png',
+          coverImage: 'assets/favorite_playlist.png',
           songIds: favoriteSongIds,
           isSystem: true,
-        );
-        break;
+          userId: currentUserId,
+        ));
       }
     }
   }
 
   void _toggleFavorite() {
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) {
+      // Nếu chưa đăng nhập, hiển thị thông báo
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng đăng nhập để sử dụng tính năng này'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     setState(() {
-      _currentSong.isFavorite = !_currentSong.isFavorite;
+      // Cập nhật trạng thái yêu thích
+      bool isFavorite = isSongFavoriteByUser(_currentSong.id, currentUserId);
+      
+      // Thêm/xóa khỏi danh sách yêu thích
+      toggleFavorite(_currentSong.id, currentUserId);
+      
+      // Cập nhật trạng thái hiển thị
+      _currentSong.isFavorite = !isFavorite;
 
       // Cập nhật danh sách phát yêu thích
       _updateFavoritePlaylist();
@@ -302,6 +395,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         duration: const Duration(seconds: 1),
       ),
     );
+  }
+
+  // Phương thức mới để áp dụng cài đặt người dùng
+  void _applyUserSettings() {
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId != null) {
+      UserSettings settings = getUserSettings(currentUserId);
+      
+      // Áp dụng cài đặt
+      setState(() {
+        _isShuffleEnabled = settings.shuffleByDefault;
+        _isRepeatEnabled = settings.repeatByDefault;
+      });
+    }
   }
 
   @override

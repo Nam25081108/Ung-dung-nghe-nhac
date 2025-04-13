@@ -6,6 +6,7 @@ import 'package:t4/presentation/screen/search_screen.dart';
 import 'package:t4/presentation/screen/playlist_detail_screen.dart';
 import 'package:t4/presentation/screen/now_playing_screen.dart';
 import 'dart:math';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PlaylistScreen extends StatefulWidget {
   const PlaylistScreen({Key? key}) : super(key: key);
@@ -35,16 +36,17 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
 
   // Phương thức mới để cập nhật danh sách playlist cục bộ
   void _updateLocalPlaylistList() {
+    // Lấy ID của người dùng hiện tại
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
     setState(() {
-      // Lọc chỉ lấy danh sách yêu thích và danh sách do người dùng tạo
+      // Lọc chỉ lấy danh sách yêu thích và danh sách do người dùng hiện tại tạo
       _localPlaylistList = globalPlaylistList
           .where((playlist) =>
-              // Chỉ lấy danh sách yêu thích từ các danh sách hệ thống
-              playlist.id == 'playlist_my_favorites' ||
-              // Lấy các danh sách phát do người dùng tự tạo (ID chứa timestamp)
-              (!playlist.isSystem ||
-                  (playlist.id.contains('_') &&
-                      playlist.id.split('_').last.length > 8)))
+              // Chỉ lấy danh sách yêu thích của người dùng hiện tại
+              (playlist.id == 'playlist_my_favorites' && playlist.userId == currentUserId) ||
+              // Lấy các danh sách phát do người dùng hiện tại tạo
+              (!playlist.isSystem && playlist.userId == currentUserId))
           .toList();
     });
   }
@@ -250,6 +252,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
 
   void _showCreatePlaylistDialog() {
     final TextEditingController nameController = TextEditingController();
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
     showDialog(
       context: context,
@@ -284,6 +287,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                   coverImage: 'assets/default_playlist.png', // Ảnh mặc định
                   songIds: [], // Chưa có bài hát nào
                   isSystem: false, // Playlist người dùng tạo
+                  userId: currentUserId, // Thêm thông tin người dùng tạo playlist
                 );
 
                 // Thêm vào biến toàn cục

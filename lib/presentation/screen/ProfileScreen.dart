@@ -28,7 +28,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    favoriteSongs = songList.where((s) => s.isFavorite).toList();
+    // Sử dụng hàm getFavoriteSongs thay vì lọc trực tiếp từ songList
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId != null) {
+      favoriteSongs = getFavoriteSongs(currentUserId);
+    } else {
+      favoriteSongs = [];
+    }
     _loadDurations();
     _updateFavoritePlaylist();
     _loadUserPlaylists();
@@ -39,6 +45,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void dispose() {
     _usernameController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Cập nhật dữ liệu khi quay lại màn hình
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId != null) {
+      favoriteSongs = getFavoriteSongs(currentUserId);
+      _loadDurations();
+      _updateFavoritePlaylist();
+      _loadUserPlaylists();
+    }
   }
 
   Future<void> _loadDurations() async {
@@ -69,41 +88,98 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _updateFavoritePlaylist() {
     List<int> favoriteSongIds = favoriteSongs.map((song) => song.id).toList();
-
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    
+    // Kiểm tra xem userId hiện tại đã có danh sách yêu thích chưa
+    bool hasPersonalFavorites = false;
+    int existingFavoritesIndex = -1;
+    
     for (int i = 0; i < globalPlaylistList.length; i++) {
-      if (globalPlaylistList[i].id == 'playlist_my_favorites') {
-        globalPlaylistList[i] = Playlist(
+      if (globalPlaylistList[i].id == 'playlist_my_favorites' && 
+          globalPlaylistList[i].userId == currentUserId) {
+        hasPersonalFavorites = true;
+        existingFavoritesIndex = i;
+        break;
+      }
+    }
+    
+    if (hasPersonalFavorites) {
+      // Cập nhật danh sách yêu thích hiện có của người dùng
+      globalPlaylistList[existingFavoritesIndex] = Playlist(
+        id: 'playlist_my_favorites',
+        name: 'Yêu thích của tôi',
+        coverImage: 'assets/favorite_playlist.png',
+        songIds: favoriteSongIds,
+        isSystem: true,
+        userId: currentUserId,
+      );
+    } else {
+      // Tạo một danh sách yêu thích mới cho người dùng hiện tại
+      bool foundDefaultFavorites = false;
+      for (int i = 0; i < globalPlaylistList.length; i++) {
+        if (globalPlaylistList[i].id == 'playlist_my_favorites' && 
+            globalPlaylistList[i].userId == null) {
+          // Cập nhật playlist mặc định để thuộc về người dùng hiện tại
+          globalPlaylistList[i] = Playlist(
+            id: 'playlist_my_favorites',
+            name: 'Yêu thích của tôi',
+            coverImage: 'assets/favorite_playlist.png',
+            songIds: favoriteSongIds,
+            isSystem: true,
+            userId: currentUserId,
+          );
+          foundDefaultFavorites = true;
+          break;
+        }
+      }
+      
+      if (!foundDefaultFavorites) {
+        // Tạo mới hoàn toàn nếu không tìm thấy playlist mặc định
+        globalPlaylistList.add(Playlist(
           id: 'playlist_my_favorites',
           name: 'Yêu thích của tôi',
           coverImage: 'assets/favorite_playlist.png',
           songIds: favoriteSongIds,
           isSystem: true,
-        );
-        break;
+          userId: currentUserId,
+        ));
       }
     }
   }
 
   void _loadUserPlaylists() {
-    // Lấy danh sách playlist do người dùng tạo (không phải hệ thống)
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    
+    // Lấy danh sách playlist do người dùng tạo (không phải hệ thống) và danh sách yêu thích của người dùng hiện tại
     setState(() {
       userPlaylists = globalPlaylistList
           .where((playlist) =>
-              !playlist.isSystem || playlist.id == 'playlist_my_favorites')
+              // Lấy danh sách yêu thích của người dùng hiện tại
+              (playlist.id == 'playlist_my_favorites' && playlist.userId == currentUserId) ||
+              // Hoặc lấy danh sách do người dùng hiện tại tạo
+              (!playlist.isSystem && playlist.userId == currentUserId))
           .toList();
     });
   }
 
   void _toggleFavorite(Song song) {
-    setState(() {
-      song.isFavorite = false;
-      favoriteSongs = songList.where((s) => s.isFavorite).toList();
-      _updateFavoritePlaylist();
-    });
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId != null) {
+      setState(() {
+        // Sử dụng hàm toggleFavorite mới
+        toggleFavorite(song.id, currentUserId);
+        // Cập nhật lại danh sách bài hát yêu thích
+        favoriteSongs = getFavoriteSongs(currentUserId);
+        // Cập nhật lại trạng thái song.isFavorite để UI hiển thị đúng
+        song.isFavorite = isSongFavoriteByUser(song.id, currentUserId);
+        // Cập nhật playlist yêu thích
+        _updateFavoritePlaylist();
+      });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Đã xoá khỏi danh sách yêu thích')),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đã xoá khỏi danh sách yêu thích')),
+      );
+    }
   }
 
   void _onItemTapped(int index) {

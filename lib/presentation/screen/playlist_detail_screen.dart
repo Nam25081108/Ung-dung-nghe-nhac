@@ -4,6 +4,7 @@ import 'package:t4/data/song_list.dart';
 import 'package:t4/presentation/screen/now_playing_screen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
 import 'package:t4/presentation/screen/ProfileScreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final Playlist playlist;
@@ -155,10 +156,15 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   }
 
   void _showAddToOtherPlaylistDialog(Song song) {
-    // Lọc ra các playlist không phải hệ thống và không phải playlist hiện tại
+    // Lấy ID của người dùng hiện tại
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    
+    // Lọc ra các playlist của người dùng (loại trừ playlist hiện tại)
     List<Playlist> userPlaylists = globalPlaylistList
         .where((playlist) => 
-            !playlist.isSystem && playlist.id != widget.playlist.id)
+            !playlist.isSystem && 
+            playlist.id != widget.playlist.id && 
+            playlist.userId == currentUserId)
         .toList();
 
     if (userPlaylists.isEmpty) {
