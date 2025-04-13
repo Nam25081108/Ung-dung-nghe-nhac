@@ -16,21 +16,21 @@ class Album {
 
 final List<Album> albumList = [
   Album(
-    id: 'album_ronboogz2_1744479368',
-    name: 'Nam',
-    coverImage: 'assets/images/album_nam.jpg',
-    songIds: [10, 11, 13, 14, ],
-  ),
-  Album(
-    id: 'album_ronboogz1_1744479485',
-    name: 'Ronboogz1',
-    coverImage: 'assets/images/album_ronboogz1.jpg',
-    songIds: [1, 2, 3, 4, ],
-  ),
-  Album(
     id: 'album_ronboogz3_1744535696',
-    name: 'Ronboogz3',
+    name: 'Ronboogz',
     coverImage: 'assets/images/album_ronboogz3.jpg',
     songIds: [11, 14, 16, 17, ],
+  ),
+  Album(
+    id: 'album_1__1744548637',
+    name: '1%',
+    coverImage: 'assets/images/album_1_.jpg',
+    songIds: [2, 3, 13, 18, ],
+  ),
+  Album(
+    id: 'album_l___ng_1744554174',
+    name: 'Lặng',
+    coverImage: 'assets/images/album_l___ng.png',
+    songIds: [19, 20, 21, ],
   ),
 ];

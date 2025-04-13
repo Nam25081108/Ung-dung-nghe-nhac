@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:just_audio/just_audio.dart';
+import 'dart:async';
 import 'package:t4/data/song_list.dart';
 import 'package:t4/data/playlist_list.dart';
 import 'package:t4/presentation/screen/home_screen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
 import 'package:t4/presentation/screen/playlist_detail_screen.dart';
 import 'now_playing_screen.dart';
+
+// Stream controller toàn cục để thông báo thay đổi playlist
+final StreamController<void> playlistUpdateController =
+    StreamController<void>.broadcast();
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -22,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _selectedIndex = 2;
   late List<Playlist> userPlaylists = [];
   final TextEditingController _usernameController = TextEditingController();
+  late StreamSubscription<void> _playlistUpdateSubscription;
 
   // Phân trang
   final int _currentPage = 0;
@@ -30,7 +36,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Sử dụng hàm getFavoriteSongs thay vì lọc trực tiếp từ songList
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
     if (currentUserId != null) {
       favoriteSongs = getFavoriteSongs(currentUserId);
@@ -41,24 +46,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _updateFavoritePlaylist();
     _loadUserPlaylists();
     _usernameController.text = user?.displayName ?? 'Người dùng';
+
+    // Đăng ký lắng nghe sự kiện cập nhật playlist
+    _playlistUpdateSubscription = playlistUpdateController.stream.listen((_) {
+      if (mounted) {
+        _loadUserPlaylists();
+      }
+    });
   }
 
   @override
   void dispose() {
     _usernameController.dispose();
+    _playlistUpdateSubscription.cancel();
     super.dispose();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Cập nhật dữ liệu khi quay lại màn hình
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
     if (currentUserId != null) {
-      favoriteSongs = getFavoriteSongs(currentUserId);
-      _loadDurations();
-      _updateFavoritePlaylist();
-      _loadUserPlaylists();
+      setState(() {
+        favoriteSongs = getFavoriteSongs(currentUserId);
+        _loadDurations();
+        _updateFavoritePlaylist();
+        _loadUserPlaylists();
+      });
     }
   }
 
@@ -151,18 +165,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _loadUserPlaylists() {
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-
-    // Lấy danh sách playlist do người dùng tạo (không phải hệ thống) và danh sách yêu thích của người dùng hiện tại
-    setState(() {
-      userPlaylists = globalPlaylistList
+    if (currentUserId != null && mounted) {
+      // Lấy danh sách playlist do người dùng tạo và danh sách yêu thích
+      List<Playlist> updatedPlaylists = globalPlaylistList
           .where((playlist) =>
-              // Lấy danh sách yêu thích của người dùng hiện tại
               (playlist.id == 'playlist_my_favorites' &&
                   playlist.userId == currentUserId) ||
-              // Hoặc lấy danh sách do người dùng hiện tại tạo
               (!playlist.isSystem && playlist.userId == currentUserId))
           .toList();
-    });
+
+      // Sắp xếp playlist theo thời gian tạo (mới nhất lên đầu)
+      updatedPlaylists.sort((a, b) {
+        // Đảm bảo playlist yêu thích luôn ở đầu
+        if (a.id == 'playlist_my_favorites') return -1;
+        if (b.id == 'playlist_my_favorites') return 1;
+
+        // Lấy timestamp từ ID của playlist (format: playlist_timestamp_userId)
+        int timestampA = int.tryParse(a.id.split('_')[1]) ?? 0;
+        int timestampB = int.tryParse(b.id.split('_')[1]) ?? 0;
+        return timestampB.compareTo(timestampA);
+      });
+
+      // Chỉ cập nhật state nếu có sự thay đổi
+      if (!_arePlaylistsEqual(userPlaylists, updatedPlaylists)) {
+        setState(() {
+          userPlaylists = updatedPlaylists;
+        });
+      }
+    }
+  }
+
+  // Hàm so sánh hai danh sách playlist
+  bool _arePlaylistsEqual(List<Playlist> list1, List<Playlist> list2) {
+    if (list1.length != list2.length) return false;
+    for (int i = 0; i < list1.length; i++) {
+      if (list1[i].id != list2[i].id ||
+          list1[i].songIds.length != list2[i].songIds.length ||
+          !list1[i].songIds.every((id) => list2[i].songIds.contains(id))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   void _toggleFavorite(Song song) {
@@ -198,7 +241,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } else if (index == 1) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => SearchScreen()),
+        MaterialPageRoute(builder: (context) => const SearchScreen()),
       );
     }
   }

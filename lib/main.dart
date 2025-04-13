@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => SplashScreen(),
+        '/': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/home': (context) => const HomeScreen(),
@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
         '/forgot_password': (context) => const ForgotPasswordScreen(),
         '/album': (context) => const AlbumScreen(),
         '/playlist': (context) => const PlaylistScreen(),
-        '/profile': (context) => ProfileScreen(),
+        '/profile': (context) => const ProfileScreen(),
       },
     );
   }

@@ -206,6 +206,15 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   void _showAddToPlaylistDialog() {
     // Lấy ID của người dùng hiện tại
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng đăng nhập để sử dụng tính năng này'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
 
     // Lọc ra các playlist không phải hệ thống và thuộc về người dùng hiện tại
     List<Playlist> userPlaylists = globalPlaylistList
@@ -213,79 +222,203 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             !playlist.isSystem && playlist.userId == currentUserId)
         .toList();
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Thêm vào danh sách phát'),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 300,
-          child: userPlaylists.isEmpty
-              ? const Center(child: Text('Chưa có danh sách phát nào'))
-              : ListView.builder(
-                  itemCount: userPlaylists.length,
-                  itemBuilder: (context, index) {
-                    final playlist = userPlaylists[index];
-
-                    return ListTile(
-                      title: Text(playlist.name),
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: Image.asset(
-                          playlist.coverImage,
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                        ),
+      backgroundColor: Colors.grey.shade900,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Thêm vào danh sách phát',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                      onTap: () {
-                        // Thêm bài hát vào playlist
-                        if (!playlist.songIds.contains(_currentSong.id)) {
-                          playlist.songIds.add(_currentSong.id);
-
-                          // Cập nhật lại playlist trong danh sách toàn cục
-                          for (int i = 0; i < globalPlaylistList.length; i++) {
-                            if (globalPlaylistList[i].id == playlist.id) {
-                              globalPlaylistList[i] = playlist;
-                              break;
-                            }
-                          }
-
-                          setState(() {
-                            _isAddedToPlaylist = true;
-                          });
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                  'Đã thêm "${_currentSong.title}" vào danh sách phát "${playlist.name}"'),
-                              duration: const Duration(seconds: 2),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Nút tạo danh sách phát mới
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF31C934).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.add,
+                      color: Color(0xFF31C934),
+                    ),
+                  ),
+                  title: const Text(
+                    'Tạo danh sách phát mới',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onTap: () {
+                    // Hiển thị dialog tạo playlist mới
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        String newPlaylistName = '';
+                        return AlertDialog(
+                          title: const Text('Tạo danh sách phát mới'),
+                          content: TextField(
+                            autofocus: true,
+                            decoration: const InputDecoration(
+                              hintText: 'Nhập tên danh sách phát',
                             ),
-                          );
-
-                          // Đóng dialog sau khi thêm thành công
-                          Navigator.pop(context);
-                        } else {
-                          // Nếu bài hát đã có trong playlist
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                  'Bài hát "${_currentSong.title}" đã có trong danh sách phát này'),
-                              duration: const Duration(seconds: 2),
+                            onChanged: (value) {
+                              newPlaylistName = value;
+                            },
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Hủy'),
                             ),
-                          );
-                        }
+                            TextButton(
+                              onPressed: () {
+                                if (newPlaylistName.trim().isNotEmpty) {
+                                  // Tạo playlist mới
+                                  final timestamp =
+                                      DateTime.now().millisecondsSinceEpoch;
+                                  final newId =
+                                      'playlist_${timestamp}_${currentUserId}';
+                                  final newPlaylist = Playlist(
+                                    id: newId,
+                                    name: newPlaylistName.trim(),
+                                    coverImage: _currentSong.coverImage,
+                                    songIds: [_currentSong.id],
+                                    isSystem: false,
+                                    userId: currentUserId,
+                                  );
+
+                                  // Thêm vào danh sách toàn cục
+                                  globalPlaylistList.add(newPlaylist);
+
+                                  // Đóng cả 2 dialog
+                                  Navigator.pop(
+                                      context); // Đóng dialog tạo playlist
+                                  Navigator.pop(context); // Đóng bottom sheet
+
+                                  setState(() {
+                                    _isAddedToPlaylist = true;
+                                  });
+
+                                  // Hiển thị thông báo
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Đã tạo danh sách phát "${newPlaylistName}" và thêm bài hát vào',
+                                      ),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: const Text('Tạo'),
+                            ),
+                          ],
+                        );
                       },
                     );
                   },
                 ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
-          ),
-        ],
+                if (userPlaylists.isNotEmpty) ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      'Danh sách phát của bạn',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: userPlaylists.length,
+                      itemBuilder: (context, index) {
+                        final playlist = userPlaylists[index];
+                        return ListTile(
+                          title: Text(
+                            playlist.name,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.asset(
+                              playlist.coverImage,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${playlist.songIds.length} bài hát',
+                            style: TextStyle(color: Colors.grey.shade400),
+                          ),
+                          onTap: () {
+                            if (!playlist.songIds.contains(_currentSong.id)) {
+                              setState(() {
+                                playlist.songIds.add(_currentSong.id);
+                                // Cập nhật lại playlist trong danh sách toàn cục
+                                final index = globalPlaylistList.indexWhere(
+                                  (p) => p.id == playlist.id,
+                                );
+                                if (index != -1) {
+                                  globalPlaylistList[index] = playlist;
+                                }
+                                _isAddedToPlaylist = true;
+                              });
+
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Đã thêm "${_currentSong.title}" vào ${playlist.name}',
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            } else {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Bài hát đã có trong ${playlist.name}',
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
       ),
     );
   }

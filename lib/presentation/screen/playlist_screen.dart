@@ -229,13 +229,13 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
             // Mở màn hình tìm kiếm
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => SearchScreen()),
+              MaterialPageRoute(builder: (context) => const SearchScreen()),
             );
           } else if (index == 2) {
             // Mở màn hình yêu thích
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
             );
           } else if (index == 0) {
             // Trở về màn hình home

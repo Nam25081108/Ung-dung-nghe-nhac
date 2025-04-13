@@ -225,13 +225,13 @@ class _HomeScreenState extends State<HomeScreen> {
             // Mở màn hình tìm kiếm
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => SearchScreen()),
+              MaterialPageRoute(builder: (context) => const SearchScreen()),
             );
           } else if (index == 2) {
             // Mở màn hình yêu thích
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
             );
           } else {
             setState(() {
@@ -285,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMusicItem(String title, String artist, String imagePath) {
-    return Container(
+    return SizedBox(
       width: 160,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -327,7 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAlbumItem(String title, String artist, String imagePath) {
-    return Container(
+    return SizedBox(
       width: 160,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

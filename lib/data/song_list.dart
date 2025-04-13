@@ -6,6 +6,7 @@ class Song {
   final String assetPath;
   final String lyrics;
   final String? album;
+  final int? albumId;
   bool isFavorite;
 
   Song({
@@ -16,6 +17,7 @@ class Song {
     required this.assetPath,
     required this.lyrics,
     this.album,
+    this.albumId,
     this.isFavorite = false,
   });
 }
@@ -256,5 +258,41 @@ Nhưng tim thì vắng lặng...''',
     assetPath: 'assets/audio/khi_m__.mp3',
     lyrics:
         'Năm anh lên 6, thích xem hoạt hình Nhưng anh không thích nước mắt rớt trên mặt mình \nKhi ba nói anh càng lớn thì càng lười \nCon mà học dốt mai sau lấy gì làm người? \nNăm anh 16, thích viết nhạc tình\n Mẹ anh hay nói đừng để nó lừa gạt mình Những sự hào nhoáng con thấy trên truyền hình\n Luôn kèm những thứ đang mong muốn làm phiền mình \nNăm anh 26 vẫn cố kiếm kế sinh nhai. Yêu đương hơi khó khi chẳng biết sẽ tin ai \nMẹ anh hay nói phải kiếm đứa làm bà vui Dù con mới chính là người cùng họ già cỗi \nAnh bước lân la, ngay trước sân ga. \nKhi em ngồi xuống hàng ghế đá trước chân ta \nTa chẳng nhìn nhau. Em hỏi vài câu\nKhi nào anh mới sống đúng đây?\n Khi nào anh mới hết đắng cay? \nKhi nào anh mới vui? \nAnh chẳng biết nói gì, và đó là khi \nKhi mình không muốn khóc trước em \nKhi bàn chân lặng lẽ bước lên \nĐể em chẳng thấy mình buồn \nĐể cho mọi thứ bình thường \nNăm anh 26, bạn bè anh có nhà ba gian Lôi chuyện anh không có nhà ra than \nVà anh cố để mà kiếm được việc làm \nVì sự thanh công luôn được tính bằng tiền bạc \nKhi anh 36 đứa con của mình đang lớn dần \nAnh ho ra máu với công việc thêm cuối tuần \nNhưng ai thấu vì điều đó chỉ làm mình thêm muối mặt \nVà đời vốn không trả công cho những ai đang cúi mặt\nLúc 46 con anh lớn khôn, cần có số vốn làm điều lớn hơn, và \nNó muốn sống không muốn giống anh Anh bước lân la, ngay trước sân ga.\n Khi em ngồi xuống hàng ghế đá trước chân ta \nTa chẳng nhìn nhau Em hỏi vài câu \nKhi nào anh mới sống đúng đây? \nKhi nào anh mới hết đắng cay? \nKhi nào anh mới vui? \nAnh chẳng biết nói gì, và đó là khi \nKhi mình không muốn khóc trước em \nKhi bàn chân lặng lẽ bước lên \nĐể em chẳng thấy mình buồn \nĐể cho mọi thứ bình thường\nLúc 66 anh chẳng thể đến được nơi nào Những ước muốn khi ấu thơ tiếp tục bơi vào \nChỉ có sóng gió phía trước đã ngừng khơi mào Nhưng mà anh… \nKhi nào anh mới sống đúng đây? \nKhi nào anh mới hết đắng cay? \nKhi nào anh mới vui? \nAnh chẳng biết nói gì, và đó là khi \nKhi mình không muốn khóc trước em \nKhi bàn chân lặng lẽ bước lên \nĐể em chẳng thấy mình buồn \nĐể cho mọi thứ bình thường',
+  ),
+  Song(
+    id: 18,
+    title: 'Tháp drill tự do',
+    artist: 'MCK',
+    coverImage: 'assets/images/th__p_drill_t____do.jpg',
+    assetPath: 'assets/audio/th__p_drill_t____do.mp3',
+    lyrics:
+        'Người đi anh còn chẳng muốn viết thêm tình ca\n\nCảm xúc đã quá ứ động anh chẳng thể nói ra\n\nChẳng còn nhòe đi mắt ướt\n\nChẳng buồn như lúc trước\n\nThời gian trôi qua thấm thoát khiến lá thay màu sắc\n\nBaby buông tay anh rời xa giờ anh thấy tự do\n\nHéo úa bao nhiêu thời gian ngước mắt lên nhìn cung đàn\n\nNhư cơn mưa mùa đông chợt ghé qua\n\nCứ coi anh gột sạch rồi trôi xa\n\nCon tim bình yên vấn vương nơi em nhiều\n\nGiờ anh là cánh chim bay chơi vơi tìm nơi chốn\n\nCũng chẳng thể vội vàng xóa nhòa đi\n\nTrước khi tiệc tàn hạ màn anh sẽ đi\n\nCon tim không nghe lời lý trí\n\nBiết trước đến lúc lụi tàn\n\nMắt đầm mi cuồng si\n\nEm đi bước qua cuộc đời thôi\n\nLời em nói còn lại nơi này..',
+  ),
+  Song(
+    id: 19,
+    title: 'Anh vẫn đợi',
+    artist: 'Shiki',
+    coverImage: 'assets/images/anh_v___n______i.png',
+    assetPath: 'assets/audio/anh_v___n______i.mp3',
+    lyrics:
+        'Dù nhiều cơn đau như thiêu chết\nBut anh vẫn không thể rời xa girl, anh không thể\nDù cho dao đâm hàng triệu nhát\nDẫu có bao vết thương anh vẫn đợi\n\nEm là người trong mỗi câu chuyện\nEm là chủ đề viết rất riêng\nVì em là một điều đặt biệt\nMà cả thế giới đang tìm nên là\nDẫu có bao vết thương anh vẫn đợi\n\nMy darling oh\nMy darling oh\nDù nhiều lần lặng im đến đau thắt trái tim anh\nDẫu có bao vết thương anh vẫn đợi\n(Dẫu có bao vết thương anh vẫn đợi)\n\nAnh cũng chẳng thể hiểu ra đâu\nNhư lời thề này đã trao nhau\nVậy thì điều gì em phải buồn\nKhi anh vốn đã thuộc về em\n\nBabe your my darling oh\nMy darling oh\nDù cuộc đời đã cho ai lấy cắp trái tim em\nDẫu có bao vết thương anh vẫn đợi\n\nQuay về lại những phút ban đầu\nKhi mà mình chưa rõ tên nhau\nNguyện một lòng được yêu được chờ\nDù ngàn năm nữa anh vẫn bên em\n\nBabe your my darling oh\nMy darling oh\nDù cuộc đời đã cho ai lấy cắp trái tim em\nDẫu có bao vết thương anh vẫn đợi',
+  ),
+  Song(
+    id: 20,
+    title: 'Ánh mắt',
+    artist: 'Shiki, Obito',
+    coverImage: 'assets/images/__nh_m___t.png',
+    assetPath: 'assets/audio/__nh_m___t.mp3',
+    lyrics:
+        'Dù nhiều cơn đau như thiêu chết\nBut anh vẫn không thể rời xa girl, anh không thể\nDù cho dao đâm hàng triệu nhát\nDẫu có bao vết thương anh vẫn đợi\n\nEm là người trong mỗi câu chuyện\nEm là chủ đề viết rất riêng\nVì em là một điều đặt biệt\nMà cả thế giới đang tìm nên là\nDẫu có bao vết thương anh vẫn đợi\n\nMy darling oh\nMy darling oh\nDù nhiều lần lặng im đến đau thắt trái tim anh\nDẫu có bao vết thương anh vẫn đợi\n(Dẫu có bao vết thương anh vẫn đợi)\n\nAnh cũng chẳng thể hiểu ra đâu\nNhư lời thề này đã trao nhau\nVậy thì điều gì em phải buồn\nKhi anh vốn đã thuộc về em\n\nBabe your my darling oh\nMy darling oh\nDù cuộc đời đã cho ai lấy cắp trái tim em\nDẫu có bao vết thương anh vẫn đợi\n\nQuay về lại những phút ban đầu\nKhi mà mình chưa rõ tên nhau\nNguyện một lòng được yêu được chờ\nDù ngàn năm nữa anh vẫn bên em\n\nBabe your my darling oh\nMy darling oh\nDù cuộc đời đã cho ai lấy cắp trái tim em\nDẫu có bao vết thương anh vẫn đợi',
+  ),
+  Song(
+    id: 21,
+    title: 'Có đôi điều',
+    artist: 'Shiki',
+    coverImage: 'assets/images/c_______i___i___u.png',
+    assetPath: 'assets/audio/c_______i___i___u.mp3',
+    lyrics:
+        'Dù nhiều cơn đau như thiêu chết\nBut anh vẫn không thể rời xa girl, anh không thể\nDù cho dao đâm hàng triệu nhát\nDẫu có bao vết thương anh vẫn đợi\n\nEm là người trong mỗi câu chuyện\nEm là chủ đề viết rất riêng\nVì em là một điều đặt biệt\nMà cả thế giới đang tìm nên là\nDẫu có bao vết thương anh vẫn đợi\n\nMy darling oh\nMy darling oh\nDù nhiều lần lặng im đến đau thắt trái tim anh\nDẫu có bao vết thương anh vẫn đợi\n(Dẫu có bao vết thương anh vẫn đợi)\n\nAnh cũng chẳng thể hiểu ra đâu\nNhư lời thề này đã trao nhau\nVậy thì điều gì em phải buồn\nKhi anh vốn đã thuộc về em\n\nBabe your my darling oh\nMy darling oh\nDù cuộc đời đã cho ai lấy cắp trái tim em\nDẫu có bao vết thương anh vẫn đợi\n\nQuay về lại những phút ban đầu\nKhi mà mình chưa rõ tên nhau\nNguyện một lòng được yêu được chờ\nDù ngàn năm nữa anh vẫn bên em\n\nBabe your my darling oh\nMy darling oh\nDù cuộc đời đã cho ai lấy cắp trái tim em\nDẫu có bao vết thương anh vẫn đợi',
   ),
 ];

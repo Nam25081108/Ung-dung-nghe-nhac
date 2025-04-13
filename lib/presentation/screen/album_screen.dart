@@ -120,13 +120,13 @@ class _AlbumScreenState extends State<AlbumScreen> {
             // Mở màn hình tìm kiếm
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => SearchScreen()),
+              MaterialPageRoute(builder: (context) => const SearchScreen()),
             );
           } else if (index == 2) {
             // Mở màn hình yêu thích
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
             );
           } else if (index == 0) {
             // Trở về màn hình home
@@ -229,17 +229,17 @@ class _AlbumScreenState extends State<AlbumScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      artistName,
+                      album.name,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 18,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      album.name,
+                      artistName,
                       style: const TextStyle(
                         color: Colors.grey,
                         fontSize: 14,
