@@ -21,70 +21,57 @@ List<RecentlyPlayed> recentlyPlayedList = [];
 void addToRecentlyPlayed(int songId, String userId) {
   // Loại bỏ bài hát cũ (nếu đã tồn tại) trước khi thêm mới
   recentlyPlayedList.removeWhere(
-    (history) => history.songId == songId && history.userId == userId
-  );
-  
+      (history) => history.songId == songId && history.userId == userId);
+
   // Thêm bài hát vào lịch sử với thời gian hiện tại
-  recentlyPlayedList.add(
-    RecentlyPlayed(
-      userId: userId,
-      songId: songId,
-      playedAt: DateTime.now(),
-    )
-  );
-  
+  recentlyPlayedList.add(RecentlyPlayed(
+    userId: userId,
+    songId: songId,
+    playedAt: DateTime.now(),
+  ));
+
   // Giới hạn số lượng bài hát lưu trữ cho mỗi người dùng (nếu cần)
   const int maxHistoryPerUser = 20;
-  List<RecentlyPlayed> userHistory = recentlyPlayedList
-      .where((history) => history.userId == userId)
-      .toList();
-  
+  List<RecentlyPlayed> userHistory =
+      recentlyPlayedList.where((history) => history.userId == userId).toList();
+
   if (userHistory.length > maxHistoryPerUser) {
     // Sắp xếp theo thời gian mới nhất -> cũ nhất
     userHistory.sort((a, b) => b.playedAt.compareTo(a.playedAt));
-    
+
     // Lấy danh sách ID bài hát cần xóa (quá số lượng tối đa)
     List<int> songIdsToRemove = userHistory
         .sublist(maxHistoryPerUser)
         .map((history) => history.songId)
         .toList();
-    
+
     // Xóa các bài hát cũ khỏi lịch sử
-    recentlyPlayedList.removeWhere(
-      (history) => 
-          history.userId == userId && 
-          songIdsToRemove.contains(history.songId)
-    );
+    recentlyPlayedList.removeWhere((history) =>
+        history.userId == userId && songIdsToRemove.contains(history.songId));
   }
 }
 
 // Lấy danh sách các bài hát đã phát gần đây của người dùng
 List<Song> getRecentlyPlayedSongs(String userId) {
   // Lấy danh sách ID bài hát đã phát gần đây của người dùng
-  List<RecentlyPlayed> userHistory = recentlyPlayedList
-      .where((history) => history.userId == userId)
-      .toList();
-  
+  List<RecentlyPlayed> userHistory =
+      recentlyPlayedList.where((history) => history.userId == userId).toList();
+
   // Sắp xếp theo thời gian mới nhất -> cũ nhất
   userHistory.sort((a, b) => b.playedAt.compareTo(a.playedAt));
-  
+
   // Lấy danh sách ID bài hát
-  List<int> recentSongIds = userHistory
-      .map((history) => history.songId)
-      .toList();
-  
+  List<int> recentSongIds =
+      userHistory.map((history) => history.songId).toList();
+
   // Lọc danh sách bài hát theo ID và giữ nguyên thứ tự đã phát
   List<Song> result = [];
   for (int id in recentSongIds) {
-    Song? song = songList.firstWhere(
-      (s) => s.id == id,
-      orElse: () => null as Song
-    );
-    if (song != null) {
-      result.add(song);
-    }
+    Song? song =
+        songList.firstWhere((s) => s.id == id, orElse: () => null as Song);
+    result.add(song);
   }
-  
+
   return result;
 }
 
@@ -93,20 +80,20 @@ void updateRecentlyPlayedPlaylist(String userId) {
   // Lấy danh sách bài hát đã phát gần đây
   List<Song> recentSongs = getRecentlyPlayedSongs(userId);
   List<int> recentSongIds = recentSongs.map((song) => song.id).toList();
-  
+
   // Tìm và cập nhật playlist "Đã phát gần đây" trong globalPlaylistList
   bool hasPersonalRecents = false;
   int existingRecentsIndex = -1;
-  
+
   for (int i = 0; i < globalPlaylistList.length; i++) {
-    if (globalPlaylistList[i].id == 'playlist_recently_played' && 
+    if (globalPlaylistList[i].id == 'playlist_recently_played' &&
         globalPlaylistList[i].userId == userId) {
       hasPersonalRecents = true;
       existingRecentsIndex = i;
       break;
     }
   }
-  
+
   if (hasPersonalRecents) {
     // Cập nhật danh sách đã phát gần đây hiện có của người dùng
     globalPlaylistList[existingRecentsIndex] = Playlist(
@@ -128,4 +115,4 @@ void updateRecentlyPlayedPlaylist(String userId) {
       userId: userId,
     ));
   }
-} 
+}

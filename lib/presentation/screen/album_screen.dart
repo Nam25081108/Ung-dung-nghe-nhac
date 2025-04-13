@@ -5,8 +5,6 @@ import 'package:t4/data/playlist_list.dart';
 import 'package:t4/presentation/screen/album_detail_screen.dart';
 import 'package:t4/presentation/screen/ProfileScreen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
-import 'package:t4/presentation/screen/playlist_screen.dart';
-import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AlbumScreen extends StatefulWidget {
@@ -292,9 +290,10 @@ class _AlbumScreenState extends State<AlbumScreen> {
                       final timestamp = DateTime.now().millisecondsSinceEpoch;
                       final newId =
                           'playlist_album_${album.name.toLowerCase().replaceAll(' ', '_')}_$timestamp';
-                      
+
                       // Lấy ID của người dùng hiện tại
-                      final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                      final String? currentUserId =
+                          FirebaseAuth.instance.currentUser?.uid;
 
                       final newPlaylist = Playlist(
                         id: newId,
@@ -303,7 +302,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
                         songIds: List.from(
                             album.songIds), // Tạo bản sao danh sách songIds
                         isSystem: false,
-                        userId: currentUserId, // Thêm ID người dùng tạo playlist
+                        userId:
+                            currentUserId, // Thêm ID người dùng tạo playlist
                       );
 
                       // Thêm vào danh sách toàn cục

@@ -1,21 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:t4/data/song_list.dart';
 import 'package:t4/presentation/screen/now_playing_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'dart:convert';
 
 class SearchScreen extends StatefulWidget {
+  const SearchScreen({super.key});
+
   @override
   _SearchScreenState createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  TextEditingController _controller = TextEditingController();
-  List<Song> _filteredSongs = songList;
+  final TextEditingController _controller = TextEditingController();
+  List<Song> _filteredSongs = [];
+  List<String> _searchHistory = [];
+  static const String _searchHistoryKey = 'search_history';
 
-  // Quản lý phân trang
-  int _currentPage = 0;
-  final int _songsPerPage = 10;
+  @override
+  void initState() {
+    super.initState();
+    _loadSearchHistory();
+  }
+
+  Future<void> _loadSearchHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _searchHistory = prefs.getStringList(_searchHistoryKey) ?? [];
+    });
+  }
+
+  Future<void> _saveSearchHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_searchHistoryKey, _searchHistory);
+  }
+
+  void _addToSearchHistory(String query) {
+    if (query.isEmpty) return;
+
+    setState(() {
+      _searchHistory.remove(query); // Xóa nếu đã tồn tại
+      _searchHistory.insert(0, query); // Thêm vào đầu danh sách
+      if (_searchHistory.length > 10) {
+        // Giới hạn 10 lịch sử tìm kiếm
+        _searchHistory.removeLast();
+      }
+    });
+    _saveSearchHistory();
+  }
+
+  void _removeFromHistory(String query) {
+    setState(() {
+      _searchHistory.remove(query);
+    });
+    _saveSearchHistory();
+  }
 
   void _filterSongs(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        _filteredSongs = [];
+      });
+      return;
+    }
+
+    _addToSearchHistory(query);
+
     final results = songList.where((song) {
       final lowerQuery = query.toLowerCase();
       return song.title.toLowerCase().contains(lowerQuery) ||
@@ -24,7 +75,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
     setState(() {
       _filteredSongs = results;
-      _currentPage = 0; // Reset về trang đầu tiên khi tìm kiếm mới
     });
   }
 
@@ -43,25 +93,13 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Tính toán số lượng trang và danh sách bài hát cho trang hiện tại
-    int totalPages = (_filteredSongs.length / _songsPerPage).ceil();
-    int startIndex = _currentPage * _songsPerPage;
-    int endIndex = (_currentPage + 1) * _songsPerPage;
-    if (endIndex > _filteredSongs.length) endIndex = _filteredSongs.length;
-
-    List<Song> displayedSongs = _filteredSongs.isNotEmpty
-        ? _filteredSongs.sublist(startIndex, endIndex)
-        : [];
-
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Thanh tìm kiếm có nút quay lại bên trong container bo tròn
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 height: 50,
@@ -91,93 +129,68 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Kết quả tìm kiếm',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  if (_filteredSongs.isNotEmpty)
-                    Text(
-                      '${_filteredSongs.length} bài hát',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: _filteredSongs.isEmpty
-                          ? const Center(
-                              child: Text('Không tìm thấy bài hát nào.'))
-                          : ListView.builder(
-                              itemCount: displayedSongs.length,
-                              itemBuilder: (context, index) {
-                                final song = displayedSongs[index];
-                                return ListTile(
-                                  leading: Image.asset(
-                                    song.coverImage,
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
-                                  ),
-                                  title: Text(
-                                    song.title,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  subtitle: Text(song.artist),
-                                  onTap: () =>
-                                      _onSongTapped(song, startIndex + index),
-                                );
-                              },
-                            ),
-                    ),
-
-                    // Điều khiển phân trang
-                    if (totalPages > 1)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.arrow_back_ios),
-                              onPressed: _currentPage > 0
-                                  ? () {
-                                      setState(() {
-                                        _currentPage--;
-                                      });
-                                    }
-                                  : null,
-                            ),
-                            Text(
-                              'Trang ${_currentPage + 1}/$totalPages',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.arrow_forward_ios),
-                              onPressed: _currentPage < totalPages - 1
-                                  ? () {
-                                      setState(() {
-                                        _currentPage++;
-                                      });
-                                    }
-                                  : null,
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
+              if (_controller.text.isEmpty) ...[
+                const Text(
+                  'Lịch sử tìm kiếm',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-              ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: _searchHistory.isEmpty
+                      ? const Center(
+                          child: Text('Chưa có lịch sử tìm kiếm'),
+                        )
+                      : ListView.builder(
+                          itemCount: _searchHistory.length,
+                          itemBuilder: (context, index) {
+                            final query = _searchHistory[index];
+                            return ListTile(
+                              leading: const Icon(Icons.history),
+                              title: Text(query),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed: () => _removeFromHistory(query),
+                              ),
+                              onTap: () {
+                                _controller.text = query;
+                                _filterSongs(query);
+                              },
+                            );
+                          },
+                        ),
+                ),
+              ] else if (_filteredSongs.isNotEmpty) ...[
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _filteredSongs.length,
+                    itemBuilder: (context, index) {
+                      final song = _filteredSongs[index];
+                      return ListTile(
+                        leading: Image.asset(
+                          song.coverImage,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        ),
+                        title: Text(
+                          song.title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(song.artist),
+                        onTap: () => _onSongTapped(song, index),
+                      );
+                    },
+                  ),
+                ),
+              ] else ...[
+                const Expanded(
+                  child: Center(
+                    child: Text('Không tìm thấy bài hát nào'),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

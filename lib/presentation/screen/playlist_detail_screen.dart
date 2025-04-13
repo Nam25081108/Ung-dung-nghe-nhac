@@ -149,7 +149,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       ),
     ).then((_) {
       // Cập nhật UI sau khi dialog đóng
-      this.setState(() {
+      setState(() {
         _loadPlaylistSongs();
       });
     });
@@ -158,12 +158,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   void _showAddToOtherPlaylistDialog(Song song) {
     // Lấy ID của người dùng hiện tại
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    
+
     // Lọc ra các playlist của người dùng (loại trừ playlist hiện tại)
     List<Playlist> userPlaylists = globalPlaylistList
-        .where((playlist) => 
-            !playlist.isSystem && 
-            playlist.id != widget.playlist.id && 
+        .where((playlist) =>
+            !playlist.isSystem &&
+            playlist.id != widget.playlist.id &&
             playlist.userId == currentUserId)
         .toList();
 
@@ -203,7 +203,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   // Thêm bài hát vào playlist được chọn
                   if (!playlist.songIds.contains(song.id)) {
                     playlist.songIds.add(song.id);
-                    
+
                     // Cập nhật globalPlaylistList
                     for (int i = 0; i < globalPlaylistList.length; i++) {
                       if (globalPlaylistList[i].id == playlist.id) {
@@ -211,7 +211,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                         break;
                       }
                     }
-                    
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -312,7 +312,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                         child: ElevatedButton.icon(
                           onPressed: _playAllSongs,
                           icon: const Icon(Icons.play_circle_filled),
-                          label: const Text('Phát', style: TextStyle(fontSize: 16)),
+                          label: const Text('Phát',
+                              style: TextStyle(fontSize: 16)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
                             foregroundColor: Colors.white,
@@ -330,7 +331,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     OutlinedButton.icon(
                       onPressed: _showAddSongsDialog,
                       icon: const Icon(Icons.add),
-                      label: const Text('Thêm bài hát', style: TextStyle(fontSize: 14)),
+                      label: const Text('Thêm bài hát',
+                          style: TextStyle(fontSize: 14)),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
                         side: const BorderSide(color: Colors.grey),
@@ -355,7 +357,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
                         children: [
-                          Icon(Icons.music_note, size: 48, color: Colors.grey.shade600),
+                          Icon(Icons.music_note,
+                              size: 48, color: Colors.grey.shade600),
                           const SizedBox(height: 16),
                           Text(
                             'Chưa có bài hát nào',
@@ -504,7 +507,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.playlist_add, color: Colors.white),
-              title: const Text('Thêm vào danh sách phát khác', style: TextStyle(color: Colors.white)),
+              title: const Text('Thêm vào danh sách phát khác',
+                  style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _showAddToOtherPlaylistDialog(song);
@@ -513,7 +517,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             if (!widget.playlist.isSystem)
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Xóa khỏi danh sách phát', style: TextStyle(color: Colors.white)),
+                title: const Text('Xóa khỏi danh sách phát',
+                    style: TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.pop(context);
                   setState(() {

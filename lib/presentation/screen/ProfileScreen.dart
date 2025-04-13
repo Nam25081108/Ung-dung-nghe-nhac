@@ -9,6 +9,8 @@ import 'package:t4/presentation/screen/playlist_detail_screen.dart';
 import 'now_playing_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -22,7 +24,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _usernameController = TextEditingController();
 
   // Phân trang
-  int _currentPage = 0;
+  final int _currentPage = 0;
   final int _songsPerPage = 10;
 
   @override
@@ -89,20 +91,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _updateFavoritePlaylist() {
     List<int> favoriteSongIds = favoriteSongs.map((song) => song.id).toList();
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    
+
     // Kiểm tra xem userId hiện tại đã có danh sách yêu thích chưa
     bool hasPersonalFavorites = false;
     int existingFavoritesIndex = -1;
-    
+
     for (int i = 0; i < globalPlaylistList.length; i++) {
-      if (globalPlaylistList[i].id == 'playlist_my_favorites' && 
+      if (globalPlaylistList[i].id == 'playlist_my_favorites' &&
           globalPlaylistList[i].userId == currentUserId) {
         hasPersonalFavorites = true;
         existingFavoritesIndex = i;
         break;
       }
     }
-    
+
     if (hasPersonalFavorites) {
       // Cập nhật danh sách yêu thích hiện có của người dùng
       globalPlaylistList[existingFavoritesIndex] = Playlist(
@@ -117,7 +119,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       // Tạo một danh sách yêu thích mới cho người dùng hiện tại
       bool foundDefaultFavorites = false;
       for (int i = 0; i < globalPlaylistList.length; i++) {
-        if (globalPlaylistList[i].id == 'playlist_my_favorites' && 
+        if (globalPlaylistList[i].id == 'playlist_my_favorites' &&
             globalPlaylistList[i].userId == null) {
           // Cập nhật playlist mặc định để thuộc về người dùng hiện tại
           globalPlaylistList[i] = Playlist(
@@ -132,7 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           break;
         }
       }
-      
+
       if (!foundDefaultFavorites) {
         // Tạo mới hoàn toàn nếu không tìm thấy playlist mặc định
         globalPlaylistList.add(Playlist(
@@ -149,13 +151,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _loadUserPlaylists() {
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    
+
     // Lấy danh sách playlist do người dùng tạo (không phải hệ thống) và danh sách yêu thích của người dùng hiện tại
     setState(() {
       userPlaylists = globalPlaylistList
           .where((playlist) =>
               // Lấy danh sách yêu thích của người dùng hiện tại
-              (playlist.id == 'playlist_my_favorites' && playlist.userId == currentUserId) ||
+              (playlist.id == 'playlist_my_favorites' &&
+                  playlist.userId == currentUserId) ||
               // Hoặc lấy danh sách do người dùng hiện tại tạo
               (!playlist.isSystem && playlist.userId == currentUserId))
           .toList();
@@ -177,7 +180,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Đã xoá khỏi danh sách yêu thích')),
+        const SnackBar(content: Text('Đã xoá khỏi danh sách yêu thích')),
       );
     }
   }
@@ -190,7 +193,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } else if (index == 1) {
       Navigator.pushReplacement(
@@ -215,11 +218,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Tên người dùng đã được cập nhật')),
+          const SnackBar(content: Text('Tên người dùng đã được cập nhật')),
         );
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không thể cập nhật tên người dùng')),
+          const SnackBar(content: Text('Không thể cập nhật tên người dùng')),
         );
       }
     }
@@ -229,22 +232,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Chỉnh sửa hồ sơ'),
+        title: const Text('Chỉnh sửa hồ sơ'),
         content: TextField(
           controller: _usernameController,
-          decoration: InputDecoration(labelText: 'Tên người dùng'),
+          decoration: const InputDecoration(labelText: 'Tên người dùng'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Hủy'),
+            child: const Text('Hủy'),
           ),
           TextButton(
             onPressed: () {
               _updateUsername();
               Navigator.pop(context);
             },
-            child: Text('Lưu'),
+            child: const Text('Lưu'),
           ),
         ],
       ),
@@ -289,10 +292,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Row(
                         children: [
                           IconButton(
-                            icon: Icon(Icons.arrow_back, color: Colors.black),
+                            icon: const Icon(Icons.arrow_back,
+                                color: Colors.black),
                             onPressed: () => Navigator.pop(context),
                           ),
-                          Spacer(),
+                          const Spacer(),
                         ],
                       ),
                       const SizedBox(height: 20),
@@ -308,7 +312,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 16),
                       Text(
                         user?.displayName ?? 'Người dùng',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
@@ -335,7 +339,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                             ),
-                            child: Text('Chỉnh sửa'),
+                            child: const Text('Chỉnh sửa'),
                           ),
                         ],
                       ),
@@ -353,7 +357,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           'Playlists',
                           style: TextStyle(
                             fontSize: 22,
@@ -363,7 +367,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         TextButton(
                           onPressed: _navigateToPlaylistScreen,
-                          child: Text(
+                          child: const Text(
                             'Xem tất cả',
                             style: TextStyle(
                               color: Colors.green,
@@ -379,13 +383,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             child: Column(
                               children: [
                                 const SizedBox(height: 20),
-                                Icon(
+                                const Icon(
                                   Icons.playlist_play,
                                   size: 60,
                                   color: Colors.grey,
                                 ),
                                 const SizedBox(height: 16),
-                                Text(
+                                const Text(
                                   'Chưa có danh sách phát nào',
                                   style: TextStyle(
                                     color: Colors.grey,
@@ -401,14 +405,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                   ),
-                                  child: Text('Tạo danh sách phát'),
+                                  child: const Text('Tạo danh sách phát'),
                                 ),
                               ],
                             ),
                           )
                         : ListView.builder(
                             shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
+                            physics: const NeverScrollableScrollPhysics(),
                             itemCount: userPlaylists.length > 2
                                 ? 2
                                 : userPlaylists.length,
@@ -456,7 +460,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           children: [
                                             Text(
                                               playlist.name,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 18,
                                                 color: Colors.black,
@@ -476,7 +480,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                       ),
                                       IconButton(
-                                        icon: Icon(
+                                        icon: const Icon(
                                           Icons.play_circle_filled,
                                           color: Colors.green,
                                           size: 40,
