@@ -18,7 +18,7 @@ final List<Album> albumList = [
   Album(
     id: 'album_ronboogz2_1744479368',
     name: 'Nam',
-    coverImage: 'assets/images/album_ronboogz2.jpg',
+    coverImage: 'assets/images/album_nam.jpg',
     songIds: [10, 11, 13, 14, ],
   ),
   Album(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../models/artist.dart';
-import '../../models/song.dart';
 import '../../data/artists_list.dart';
 import '../../data/song_list.dart';
 import 'now_playing_screen.dart';

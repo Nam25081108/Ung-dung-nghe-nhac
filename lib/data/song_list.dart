@@ -1,16 +1,24 @@
-import '../models/song.dart';
+class Song {
+  final int id;
+  final String title;
+  final String artist;
+  final String coverImage;
+  final String assetPath;
+  final String lyrics;
+  final String? album;
+  bool isFavorite;
 
-List<Song> songList = [
-  Song(
-    id: 1,
-    title: 'Chúng Ta Của Hiện Tại',
-    artist: 'Sơn Tùng MTP',
-    coverImage: 'assets/images/67fb5102d9858_Sơn Tùng MTP.jpg',
-    assetPath: 'assets/audio/ChungTaCuaHienTai.mp3',
-    lyrics: 'Chúng ta của hiện tại...',
-  ),
-  // ... rest of the songs
-];
+  Song({
+    required this.id,
+    required this.title,
+    required this.artist,
+    required this.coverImage,
+    required this.assetPath,
+    required this.lyrics,
+    this.album,
+    this.isFavorite = false,
+  });
+}
 
 // Lớp mới để lưu trữ thông tin bài hát yêu thích của người dùng
 class UserFavorite {
