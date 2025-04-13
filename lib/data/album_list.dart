@@ -1,3 +1,5 @@
+import 'package:t4/data/song_list.dart';
+
 class Album {
   final String id;
   final String name;
@@ -17,31 +19,18 @@ final List<Album> albumList = [
     id: 'album_ronboogz2_1744479368',
     name: 'Nam',
     coverImage: 'assets/images/album_ronboogz2.jpg',
-    songIds: [
-      11,
-      12,
-      14,
-    ],
+    songIds: [10, 11, 13, 14, ],
   ),
   Album(
     id: 'album_ronboogz1_1744479485',
     name: 'Ronboogz1',
     coverImage: 'assets/images/album_ronboogz1.jpg',
-    songIds: [
-      1,
-      2,
-      3,
-      4,
-    ],
+    songIds: [1, 2, 3, 4, ],
   ),
   Album(
-    id: 'album_ronboogz2_1744521028',
-    name: 'Ronboogz2',
-    coverImage: 'assets/images/album_ronboogz2.jpg',
-    songIds: [
-      11,
-      12,
-      13,
-    ],
+    id: 'album_ronboogz3_1744535696',
+    name: 'Ronboogz3',
+    coverImage: 'assets/images/album_ronboogz3.jpg',
+    songIds: [11, 14, 16, 17, ],
   ),
 ];

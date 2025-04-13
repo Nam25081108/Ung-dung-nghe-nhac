@@ -1,24 +1,16 @@
-class Song {
-  final int id;
-  final String title;
-  final String artist;
-  final String coverImage;
-  final String assetPath;
-  final String lyrics;
-  final String? album;
-  bool isFavorite;
+import '../models/song.dart';
 
-  Song({
-    required this.id,
-    required this.title,
-    required this.artist,
-    required this.coverImage,
-    required this.assetPath,
-    required this.lyrics,
-    this.album,
-    this.isFavorite = false,
-  });
-}
+List<Song> songList = [
+  Song(
+    id: 1,
+    title: 'Chúng Ta Của Hiện Tại',
+    artist: 'Sơn Tùng MTP',
+    coverImage: 'assets/images/67fb5102d9858_Sơn Tùng MTP.jpg',
+    assetPath: 'assets/audio/ChungTaCuaHienTai.mp3',
+    lyrics: 'Chúng ta của hiện tại...',
+  ),
+  // ... rest of the songs
+];
 
 // Lớp mới để lưu trữ thông tin bài hát yêu thích của người dùng
 class UserFavorite {
@@ -247,5 +239,14 @@ Nhưng tim thì vắng lặng...''',
     coverImage: 'assets/images/v___ch__ng_ta_l___con_ng_____i.jpg',
     assetPath: 'assets/audio/v___ch__ng_ta_l___con_ng_____i.mp3',
     lyrics: 'Vì chúng ta là con người',
+  ),
+  Song(
+    id: 17,
+    title: 'Khi mà',
+    artist: 'Ronboogz',
+    coverImage: 'assets/images/khi_m__.jpg',
+    assetPath: 'assets/audio/khi_m__.mp3',
+    lyrics:
+        'Năm anh lên 6, thích xem hoạt hình Nhưng anh không thích nước mắt rớt trên mặt mình \nKhi ba nói anh càng lớn thì càng lười \nCon mà học dốt mai sau lấy gì làm người? \nNăm anh 16, thích viết nhạc tình\n Mẹ anh hay nói đừng để nó lừa gạt mình Những sự hào nhoáng con thấy trên truyền hình\n Luôn kèm những thứ đang mong muốn làm phiền mình \nNăm anh 26 vẫn cố kiếm kế sinh nhai. Yêu đương hơi khó khi chẳng biết sẽ tin ai \nMẹ anh hay nói phải kiếm đứa làm bà vui Dù con mới chính là người cùng họ già cỗi \nAnh bước lân la, ngay trước sân ga. \nKhi em ngồi xuống hàng ghế đá trước chân ta \nTa chẳng nhìn nhau. Em hỏi vài câu\nKhi nào anh mới sống đúng đây?\n Khi nào anh mới hết đắng cay? \nKhi nào anh mới vui? \nAnh chẳng biết nói gì, và đó là khi \nKhi mình không muốn khóc trước em \nKhi bàn chân lặng lẽ bước lên \nĐể em chẳng thấy mình buồn \nĐể cho mọi thứ bình thường \nNăm anh 26, bạn bè anh có nhà ba gian Lôi chuyện anh không có nhà ra than \nVà anh cố để mà kiếm được việc làm \nVì sự thanh công luôn được tính bằng tiền bạc \nKhi anh 36 đứa con của mình đang lớn dần \nAnh ho ra máu với công việc thêm cuối tuần \nNhưng ai thấu vì điều đó chỉ làm mình thêm muối mặt \nVà đời vốn không trả công cho những ai đang cúi mặt\nLúc 46 con anh lớn khôn, cần có số vốn làm điều lớn hơn, và \nNó muốn sống không muốn giống anh Anh bước lân la, ngay trước sân ga.\n Khi em ngồi xuống hàng ghế đá trước chân ta \nTa chẳng nhìn nhau Em hỏi vài câu \nKhi nào anh mới sống đúng đây? \nKhi nào anh mới hết đắng cay? \nKhi nào anh mới vui? \nAnh chẳng biết nói gì, và đó là khi \nKhi mình không muốn khóc trước em \nKhi bàn chân lặng lẽ bước lên \nĐể em chẳng thấy mình buồn \nĐể cho mọi thứ bình thường\nLúc 66 anh chẳng thể đến được nơi nào Những ước muốn khi ấu thơ tiếp tục bơi vào \nChỉ có sóng gió phía trước đã ngừng khơi mào Nhưng mà anh… \nKhi nào anh mới sống đúng đây? \nKhi nào anh mới hết đắng cay? \nKhi nào anh mới vui? \nAnh chẳng biết nói gì, và đó là khi \nKhi mình không muốn khóc trước em \nKhi bàn chân lặng lẽ bước lên \nĐể em chẳng thấy mình buồn \nĐể cho mọi thứ bình thường',
   ),
 ];
