@@ -31,41 +31,29 @@ final List<Song> songList = [
 Đèn xanh đỏ vẫn sáng
 Anh như đang ngồi đó
 Nhưng tim thì vắng lặng...''',
-  ),
-  Song(
+  ),  Song(
     id: 2,
     title: 'Chìm Sâu',
-    artist: 'RPT MCK',
+    artist: 'MCK',
     coverImage: 'assets/images/chim_sau.png',
     assetPath: 'assets/audio/chim_sau.mp3',
-    lyrics: '''Em đi qua con phố
-Đèn xanh đỏ vẫn sáng
-Anh như đang ngồi đó
-Nhưng tim thì vắng lặng...''',
-  ),
-  Song(
+    lyrics: '\'\'Em đi qua con phố\nĐèn xanh đỏ vẫn sáng\nAnh như đang ngồi đó\nNhưng tim thì vắng lặng...\'\'',
+  ),  Song(
     id: 3,
     title: 'Tại Vì Sao',
-    artist: 'RPT MCK',
+    artist: 'MCK',
     coverImage: 'assets/images/tai_vi_sao.png',
     assetPath: 'assets/audio/tai_vi_sao.mp3',
-    lyrics: '''Em đi qua con phố
-Đèn xanh đỏ vẫn sáng
-Anh như đang ngồi đó
-Nhưng tim thì vắng lặng...''',
-  ),
-  Song(
+    lyrics: '\'\'Em đi qua con phố\nĐèn xanh đỏ vẫn sáng\nAnh như đang ngồi đó\nNhưng tim thì vắng lặng...\'\'',
+  ),  Song(
     id: 4,
     title: 'Chúng Ta Của Hiện Tại',
-    artist: 'Sơn Tùng M-TP',
+    artist: 'Sơn Tùng MTP',
     coverImage: 'assets/images/chung_ta_cua_hien_tai.png',
     assetPath: 'assets/audio/chung_ta_cua_hien_tai.mp3',
-    lyrics: '''Em đi qua con phố
-Đèn xanh đỏ vẫn sáng
-Anh như đang ngồi đó
-Nhưng tim thì vắng lặng...''',
+    lyrics: '\'\'Em đi qua con phố\nĐèn xanh đỏ vẫn sáng\nAnh như đang ngồi đó\nNhưng tim thì vắng lặng...\'\'',
   ),
-  Song(
+Song(
     id: 5,
     title: 'Đơn Giản',
     artist: 'Low G',
@@ -86,19 +74,15 @@ Nhưng tim thì vắng lặng...''',
 Đèn xanh đỏ vẫn sáng
 Anh như đang ngồi đó
 Nhưng tim thì vắng lặng...''',
-  ),
-  Song(
+  ),  Song(
     id: 7,
     title: 'See Tình',
     artist: 'Hoàng Thùy Linh',
     coverImage: 'assets/images/see_tinh.png',
     assetPath: 'assets/audio/see_tinh.mp3',
-    lyrics: '''Em đi qua con phố
-Đèn xanh đỏ vẫn sáng
-Anh như đang ngồi đó
-Nhưng tim thì vắng lặng...''',
+    lyrics: '\'\'Em đi qua con phố\nĐèn xanh đỏ vẫn sáng\nAnh như đang ngồi đó\nNhưng tim thì vắng lặng...\'\'',
   ),
-  Song(
+Song(
     id: 8,
     title: 'Exit Sign',
     artist: 'HIEUTHUHAI',
@@ -185,17 +169,7 @@ Nhưng tim thì vắng lặng...''',
     coverImage: 'assets/images/don_t_c__i.jpg',
     assetPath: 'assets/audio/don_t_c__i.mp3',
     lyrics: 'Dont Côi',
-  ),
-  Song(
-    id: 12,
-    title: 'Vì chúng ta là con người',
-    artist: 'Ronboogz | HHBO | HWinno',
-    coverImage: 'assets/images/v___ch__ng_ta_l___con_ng_____i.jpg',
-    assetPath: 'assets/audio/v___ch__ng_ta_l___con_ng_____i.mp3',
-    lyrics:
-        'Tại sao mà em vẫn khóc đến hết nước mắt, chỉ vì một người?\nTại sao mà bao chuyện cũ nó vẫn, cứ trở về cùng một nơi?\nTại sao khi em đã biết chỉ có dối trá, ở trong cuộc đời?\nMà em vẫn luôn đem hết con tim đó, đánh cược thôi?\nChỉ bởi vì chúng ta là con người, con người\nChỉ bởi vì chúng ta là con người, con người\nChỉ bởi vì chúng ta là con người, con người\nLà hạt sạn tí hon ở trong đời, trong đời em ơi\nEm đã biết anh ta chỉ muốn chơi đùa thôi\nVậy tại sao hôm qua em hỏi "anh có đang lừa dối"\nVậy tại sao em bấm nhấc máy khi anh ta gọi đến?\nVà lại vội quên bao mất mát đang gọi tên\nRồi niềm đau nhồi lên em như em đã chắc từ đầu\nEm ngồi bên thềm và nước mắt tự lau\nEm gục ngã khi đôi chân em lắc lư\nEm chìm vào giấc ngủ\nKhi chưa biết gỡ nút thắc từ đâu\nVà để rồi mình anh vẫn lặng im\nKhi chuyện của em như mình tiên tri\nBiết chắc là đớn đau mà em vẫn kiên trì\nAnh ngước mắt và vẽ khói\nTrước mắt là cả thế giới\nGạt nước mắt của em lăn trên mi\nNhưng cuộc đời đâu dễ như thế đâu em\nVì em chỉ cần người em thương\nVì cuộc đời đâu dễ như thế đâu em\nKhi anh chỉ là người bên đường\nTại sao mà em vẫn khóc đến hết nước mắt, chỉ vì một người?\nTại sao mà bao chuyện cũ nó vẫn, cứ trở về cùng một nơi?\nTại sao khi em đã biết chỉ có dối trá, ở trong cuộc đời?\nMà em vẫn luôn đem hết con tim, đó đánh cược thôi?\nChỉ bởi vì chúng ta là con người, con người\nChỉ bởi vì chúng ta là con người, con người\nChỉ bởi vì chúng ta là con người, con người\nLà hạt sạn tí hon ở trong đời\nTrong đời em ơi\nEm y như áng mây trôi theo ánh trăng bay đi khắp nơi ye\nBan xuống nơi thế gian bầu trời bình yên\nBởi vì người ta thì đâu có hay\nTrong tim của em hình bóng vẫn như vậy\nAnh biết em chỉ muốn tìm được tình duyên\nVì chúng ta là con người, ngàn tiếng ca ở trong đời\nNhiều lúc ta chỉ muốn hát lên, bài nhạc những giai điệu vang trời\nEm sẽ không còn hay buồn, trời đất không còn quay cuồng\nNhiều lúc ta sẽ cùng với nhau hẹn thề, với nhau dưới cánh buồm\nVà dòng thời gian kia nó sẽ trôi qua vội vàng\nĐừng bận lòng chi nữa về những cái thứ không liên quan\nMuộn phiền trải qua cùng với những thứ em còn mang\nĐường mình về chung lối và cùng thức giấc khi trời sáng\nBên em dù nắng hay mưa rào, khó khăn thế nào\nAnh sẽ cùng em bước vượt qua\nTa đã dành hết cho nhau\nNhững đau thương sâu\nMong cho em hạnh phúc dài lâu\nTại sao mà em vẫn khóc đến hết nước mắt, chỉ vì một người?\nTại sao mà bao chuyện cũ nó vẫn, cứ trở về cùng một nơi?\nTại sao khi em đã biết chỉ có dối trá, ở trong cuộc đời?\nMà em vẫn luôn đem hết con tim, đó đánh cược thôi?\nChỉ bởi vì chúng ta là con người, con người\nChỉ bởi vì chúng ta là con người, con người\nChỉ bởi vì chúng ta là con người, con người\nLà hạt sạn tí hon ở trong đời\nTrong đời em ơi',
-  ),
-  Song(
+  ),Song(
     id: 13,
     title: 'Chỉ một đêm nữa thôi',
     artist: 'MCK',
@@ -212,5 +186,20 @@ Nhưng tim thì vắng lặng...''',
     assetPath: 'assets/audio/lan_man.mp3',
     lyrics:
         '\nEm thức giấc khi đêm muộn,\nQuăng chiếc tất lên trên giường\nNgân nga khúc nhạc em chọn \nChỉ để thiên đường càng thêm buồn\nEm bước chân ra đường \nBỏ lại suy nghĩ trên ga giường\nVà đi đến một nơi \nMà em biết chắc anh đang ở đây\n\nVà anh vốn chỉ là người cũng hay thức \nCố gắng cho lòng mình ngừng day dứt\nDùng cây bút từng giây phút\nAnh chỉ đại trà như người dùng Facebook\nAnh chỉ muốn ngủ ngon giữa đêm \nNhưng lại nhớ màu son của em \n\nVì nắng sẽ chẳng bên cạnh khi ta \nlại để nước mắt rơi\nEm có thấy gió đêm lạnh những lúc niềm đau đó cất lời?\nVì ta luôn luôn đi trễ chỉ trong vài giây để lỡ vòng tay cả đời\nVà anh chẳng muốn chỉ sống như vậy mà thôi \nĐể có em mỗi đêm về khi trên trời cao lắm bóng mây \nNếu mưa cứ rơi hoài thì căn phòng kia vẫn nóng nảy\nTa luôn có thì giờ dù em không muốn mình chờ đợi thêm\nAnh chỉ muốn được sống như vậy mà thôi \n\nĐừng đẩy nhau như nam châm chỉ vì ta trước giờ luôn luôn cùng cực \nAnh chỉ viết ra thang âm khi nhiều thứ vẫn kìm nén trong lòng ngực mình \nBao nhiêu suy nghĩ như cực hình, khiến em bực mình\nVậy thì thứ mà em cần đến là một cuộc tình\n\nAnh chỉ muốn dạo phố mỗi tối, khi niềm đau lên ngôi \nNên em đừng cố nói dối với từng câu trên môi \nNhững ai luôn tệ khi khiến em tuôn lệ \nChúng ta quên cách để buông nhẹ\nVậy thì ta sẽ biết điều đó trên đoạn đường về \n\nVì nắng sẽ chẳng bên cạnh khi ta \nlại để nước mắt rơi\nEm có thấy gió đêm lạnh những lúc niềm đau đó cất lời?\nVì ta luôn luôn đi trễ chỉ trong vài giây để lỡ vòng tay cả đời\nVà anh chẳng muốn chỉ sống như vậy mà thôi \nĐể có em mỗi đêm về khi trên trời cao lắm bóng mây \nNếu mưa cứ rơi hoài thì căn phòng kia vẫn nóng nảy\nTa luôn có thì giờ dù em không muốn mình chờ đợi thêm\nAnh chỉ muốn được sống như vậy mà thôi \n\nChỉ muốn cùng em đón ngọn gió đêm về\nEm như mặt trăng khi anh ở đâu thì anh cũng có em kề\nChỉ muốn cùng em say sưa vài lon\nUống cho đêm dài hơn\nMuốn say thêm vài cơn cùng em \n\nVì nắng sẽ chẳng bên cạnh khi em \nlại để nước mắt rơi\nEm có thấy gió đêm lạnh những lúc niềm đau đó cất lời?\nVì ta luôn luôn đi trễ chỉ trong vài giây để lỡ vòng tay cả đời\nVà anh chẳng muốn chỉ sống như vậy mà thôi \nĐể có em mỗi đêm về khi trên trời cao lắm bóng mây \nNếu mưa cứ rơi hoài thì căn phòng kia vẫn nóng nảy\nTa luôn có thì giờ dù em không muốn mình chờ đợi thêm\nAnh chỉ muốn được sống như vậy mà thôi',
+  ),
+  Song(
+    id: 15,
+    title: 'Lan man',
+    artist: 'Ronboogz',
+    coverImage: 'assets/images/lan_man.jpg',
+    assetPath: 'assets/audio/lan_man.mp3',
+    lyrics: 'aaaaa',
+  ),  Song(
+    id: 16,
+    title: 'Vì chúng ta là con người',
+    artist: 'Ronboogz',
+    coverImage: 'assets/images/v___ch__ng_ta_l___con_ng_____i.jpg',
+    assetPath: 'assets/audio/v___ch__ng_ta_l___con_ng_____i.mp3',
+    lyrics: 'Vì chúng ta là con người',
   ),
 ];

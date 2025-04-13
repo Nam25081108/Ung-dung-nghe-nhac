@@ -22,22 +22,11 @@ function getArtists() {
         preg_match_all('/Artist\(\s*id:\s*\'(.*?)\',\s*name:\s*\'(.*?)\',\s*image:\s*\'(.*?)\',\s*songIds:\s*\[(.*?)\],?\s*\)/s', $content, $matches, PREG_SET_ORDER);
         
         foreach ($matches as $match) {
-            // Trích xuất các ID bài hát từ mảng songIds
-            $songIds = [];
-            if (!empty($match[4])) {
-                preg_match_all('/(\d+)/', $match[4], $songMatches);
-                if (isset($songMatches[1])) {
-                    foreach ($songMatches[1] as $id) {
-                        $songIds[] = (int)$id;
-                    }
-                }
-            }
-            
             $artists[] = [
                 'id' => $match[1],
                 'name' => $match[2],
                 'image' => $match[3],
-                'songIds' => $songIds
+                'songIds' => []  // Khởi tạo mảng rỗng, sẽ được cập nhật khi thêm/sửa bài hát
             ];
         }
     }
@@ -69,7 +58,11 @@ $action = $_POST['action'] ?? '';
 switch ($action) {
     case 'add':
         $artist_name = $_POST['artist_name'] ?? '';
-        $selected_songs = $_POST['selected_songs'] ?? [];
+        
+        // Kiểm tra tên nghệ sĩ
+        if (empty($artist_name)) {
+            die('Vui lòng nhập tên nghệ sĩ!');
+        }
         
         // Xử lý upload hình ảnh
         $image_file = $_FILES['artist_image'] ?? null;
@@ -77,59 +70,26 @@ switch ($action) {
             $image_name = uniqid() . '_' . $image_file['name'];
             $image_path = $IMAGE_ASSETS_PATH . $image_name;
             
-            // Resize ảnh trước khi lưu
-            list($width, $height) = getimagesize($image_file['tmp_name']);
-            $max_dimension = 300; // Kích thước tối đa cho cả chiều rộng và chiều cao
-            
-            if ($width > $max_dimension || $height > $max_dimension) {
-                $ratio = $width / $height;
-                if ($ratio > 1) {
-                    $new_width = $max_dimension;
-                    $new_height = $max_dimension / $ratio;
-                } else {
-                    $new_height = $max_dimension;
-                    $new_width = $max_dimension * $ratio;
-                }
+            // Upload file trực tiếp không cần resize
+            if (move_uploaded_file($image_file['tmp_name'], $image_path)) {
+                $artists = getArtists();
                 
-                $src = imagecreatefromstring(file_get_contents($image_file['tmp_name']));
-                $dst = imagecreatetruecolor($new_width, $new_height);
+                // Tạo ID duy nhất cho nghệ sĩ
+                $artist_id = uniqid('artist_');
                 
-                imagecopyresampled($dst, $src, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+                $artists[] = [
+                    'id' => $artist_id,
+                    'name' => $artist_name,
+                    'image' => 'assets/images/' . $image_name,
+                    'songIds' => []  // Khởi tạo mảng rỗng
+                ];
                 
-                switch (strtolower(pathinfo($image_name, PATHINFO_EXTENSION))) {
-                    case 'jpeg':
-                    case 'jpg':
-                        imagejpeg($dst, $image_path, 90);
-                        break;
-                    case 'png':
-                        imagepng($dst, $image_path, 9);
-                        break;
-                    case 'gif':
-                        imagegif($dst, $image_path);
-                        break;
-                }
-                
-                imagedestroy($src);
-                imagedestroy($dst);
-            } else {
-                move_uploaded_file($image_file['tmp_name'], $image_path);
+                saveArtists($artists);
+                header('Location: dashboard.php?success=artist_add');
+                exit;
             }
-            
-            $artists = getArtists();
-            
-            // Tạo ID duy nhất cho nghệ sĩ
-            $artist_id = uniqid('artist_');
-            
-            $artists[] = [
-                'id' => $artist_id,
-                'name' => $artist_name,
-                'image' => 'assets/images/' . $image_name,
-                'songIds' => array_map('intval', $selected_songs)
-            ];
-            
-            saveArtists($artists);
-            header('Location: dashboard.php?success=artist_add');
-            exit;
+        } else {
+            die('Vui lòng chọn hình ảnh cho nghệ sĩ!');
         }
         break;
         
@@ -160,7 +120,11 @@ switch ($action) {
     case 'update':
         $artist_id = $_POST['artist_id'] ?? '';
         $artist_name = $_POST['artist_name'] ?? '';
-        $selected_songs = $_POST['selected_songs'] ?? [];
+        
+        // Kiểm tra tên nghệ sĩ
+        if (empty($artist_name)) {
+            die('Vui lòng nhập tên nghệ sĩ!');
+        }
         
         if ($artist_id) {
             $artists = getArtists();
@@ -172,60 +136,30 @@ switch ($action) {
                 $image_name = uniqid() . '_' . $image_file['name'];
                 $image_path = $IMAGE_ASSETS_PATH . $image_name;
                 
-                // Resize ảnh trước khi lưu
-                list($width, $height) = getimagesize($image_file['tmp_name']);
-                $max_dimension = 300; // Kích thước tối đa cho cả chiều rộng và chiều cao
-                
-                if ($width > $max_dimension || $height > $max_dimension) {
-                    $ratio = $width / $height;
-                    if ($ratio > 1) {
-                        $new_width = $max_dimension;
-                        $new_height = $max_dimension / $ratio;
-                    } else {
-                        $new_height = $max_dimension;
-                        $new_width = $max_dimension * $ratio;
-                    }
-                    
-                    $src = imagecreatefromstring(file_get_contents($image_file['tmp_name']));
-                    $dst = imagecreatetruecolor($new_width, $new_height);
-                    
-                    imagecopyresampled($dst, $src, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-                    
-                    switch (strtolower(pathinfo($image_name, PATHINFO_EXTENSION))) {
-                        case 'jpeg':
-                        case 'jpg':
-                            imagejpeg($dst, $image_path, 90);
-                            break;
-                        case 'png':
-                            imagepng($dst, $image_path, 9);
-                            break;
-                        case 'gif':
-                            imagegif($dst, $image_path);
-                            break;
-                    }
-                    
-                    imagedestroy($src);
-                    imagedestroy($dst);
-                } else {
-                    move_uploaded_file($image_file['tmp_name'], $image_path);
+                if (move_uploaded_file($image_file['tmp_name'], $image_path)) {
+                    $image_path = 'assets/images/' . $image_name;
                 }
-                
-                // Cập nhật thông tin nghệ sĩ
-                foreach ($artists as &$artist) {
-                    if ($artist['id'] === $artist_id) {
-                        $artist['name'] = $artist_name;
-                        if ($image_path) {
-                            $artist['image'] = $image_path;
-                        }
-                        $artist['songIds'] = array_map('intval', $selected_songs);
-                        break;
-                    }
-                }
-                
-                saveArtists($artists);
-                header('Location: dashboard.php?success=artist_update');
-                exit;
             }
+            
+            // Cập nhật thông tin nghệ sĩ
+            foreach ($artists as &$artist) {
+                if ($artist['id'] === $artist_id) {
+                    $artist['name'] = $artist_name;
+                    if ($image_path) {
+                        // Xóa ảnh cũ nếu có
+                        $old_image_path = $FLUTTER_PROJECT_PATH . $artist['image'];
+                        if (file_exists($old_image_path)) {
+                            unlink($old_image_path);
+                        }
+                        $artist['image'] = $image_path;
+                    }
+                    break;
+                }
+            }
+            
+            saveArtists($artists);
+            header('Location: dashboard.php?success=artist_update');
+            exit;
         }
         break;
 }

@@ -46,6 +46,58 @@ function getNextSongId() {
     return $maxId + 1;
 }
 
+// Hàm cập nhật songIds cho nghệ sĩ
+function updateArtistSongIds($songId, $artistNames) {
+    global $ARTISTS_LIST_PATH;
+    
+    // Đọc nội dung file artists_list.dart
+    $content = file_get_contents($ARTISTS_LIST_PATH);
+    
+    // Tách tên nghệ sĩ thành mảng
+    $artistArray = array_map('trim', explode(',', $artistNames));
+    
+    // Đọc danh sách nghệ sĩ hiện tại
+    preg_match_all('/Artist\(\s*id:\s*\'(.*?)\',\s*name:\s*\'(.*?)\',\s*image:\s*\'(.*?)\',\s*songIds:\s*\[(.*?)\],?\s*\)/s', $content, $matches, PREG_SET_ORDER);
+    
+    foreach ($matches as $match) {
+        $artistId = $match[1];
+        $artistName = $match[2];
+        $image = $match[3];
+        $currentSongIds = $match[4];
+        
+        // Kiểm tra xem nghệ sĩ có trong danh sách được chọn không
+        $isSelected = in_array($artistName, $artistArray);
+        
+        // Chuyển chuỗi songIds thành mảng
+        $songIdsArray = [];
+        if (!empty($currentSongIds)) {
+            preg_match_all('/(\d+)/', $currentSongIds, $songMatches);
+            $songIdsArray = isset($songMatches[1]) ? array_map('intval', $songMatches[1]) : [];
+        }
+        
+        if ($isSelected && !in_array($songId, $songIdsArray)) {
+            // Thêm songId mới vào danh sách
+            $songIdsArray[] = $songId;
+        } elseif (!$isSelected && in_array($songId, $songIdsArray)) {
+            // Xóa songId khỏi danh sách
+            $songIdsArray = array_diff($songIdsArray, [$songId]);
+        }
+        
+        // Tạo chuỗi songIds mới
+        $newSongIds = implode(', ', $songIdsArray);
+        
+        // Tạo đoạn code mới cho nghệ sĩ
+        $newArtistCode = "  Artist(\n    id: '$artistId',\n    name: '$artistName',\n    image: '$image',\n    songIds: [$newSongIds],\n  )";
+        
+        // Thay thế thông tin nghệ sĩ trong file
+        $pattern = '/Artist\(\s*id:\s*\'' . preg_quote($artistId, '/') . '\'.*?\),/s';
+        $content = preg_replace($pattern, $newArtistCode . ',', $content);
+    }
+    
+    // Lưu file đã cập nhật
+    file_put_contents($ARTISTS_LIST_PATH, $content);
+}
+
 // Xử lý form chỉnh sửa bài hát
 if ($_POST['action'] === 'edit_form') {
     $index = (int)$_POST['index'];
@@ -59,12 +111,15 @@ if ($_POST['action'] === 'edit_form') {
 elseif ($_POST['action'] === 'update') {
     $index = (int)$_POST['index'];
     $title = $_POST['title'] ?? '';
-    $artist = $_POST['artist'] ?? '';
+    $selected_artists = isset($_POST['selected_artists']) && is_array($_POST['selected_artists']) ? $_POST['selected_artists'] : [];
     $album = $_POST['album'] ?? '';
     $lyrics = $_POST['lyrics'] ?? '';
     
+    // Kết hợp tên các nghệ sĩ được chọn
+    $artist = !empty($selected_artists) ? implode(', ', $selected_artists) : '';
+    
     // Kiểm tra các trường bắt buộc
-    if (empty($title) || empty($artist) || empty($lyrics)) {
+    if (empty($title) || empty($selected_artists) || empty($lyrics)) {
         die('Vui lòng điền đầy đủ thông tin!');
     }
     
@@ -164,6 +219,9 @@ elseif ($_POST['action'] === 'update') {
         die('Lỗi khi cập nhật file song_list.dart!');
     }
     
+    // Cập nhật songIds cho các nghệ sĩ
+    updateArtistSongIds($oldSong['id'], $artist);
+    
     // Chuyển hướng về dashboard
     header('Location: dashboard.php?success=update');
     exit;
@@ -172,9 +230,12 @@ elseif ($_POST['action'] === 'update') {
 // Xử lý thêm bài hát mới
 elseif ($_POST['action'] === 'add') {
     $title = $_POST['title'] ?? '';
-    $artist = $_POST['artist'] ?? '';
+    $selected_artists = $_POST['selected_artists'] ?? [];
     $album = $_POST['album'] ?? '';
     $lyrics = $_POST['lyrics'] ?? '';
+    
+    // Kết hợp tên các nghệ sĩ được chọn
+    $artist = implode(', ', $selected_artists);
     
     // Kiểm tra các trường bắt buộc
     if (empty($title) || empty($artist) || empty($lyrics)) {
@@ -253,6 +314,9 @@ elseif ($_POST['action'] === 'add') {
         die('Lỗi khi cập nhật file song_list.dart!');
     }
     
+    // Cập nhật songIds cho các nghệ sĩ
+    updateArtistSongIds($newId, $artist);
+    
     // Chuyển hướng về dashboard
     header('Location: dashboard.php?success=add');
     exit;
@@ -293,6 +357,40 @@ elseif ($_POST['action'] === 'delete') {
     if (file_exists($imagePath)) {
         unlink($imagePath);
     }
+    
+    // Xóa songId khỏi danh sách của tất cả nghệ sĩ
+    $artistsContent = file_get_contents($ARTISTS_LIST_PATH);
+    preg_match_all('/Artist\(\s*id:\s*\'(.*?)\',\s*name:\s*\'(.*?)\',\s*image:\s*\'(.*?)\',\s*songIds:\s*\[(.*?)\],?\s*\)/s', $artistsContent, $artistMatches, PREG_SET_ORDER);
+    
+    foreach ($artistMatches as $match) {
+        $artistId = $match[1];
+        $artistName = $match[2];
+        $image = $match[3];
+        $currentSongIds = $match[4];
+        
+        // Chuyển chuỗi songIds thành mảng
+        $songIdsArray = [];
+        if (!empty($currentSongIds)) {
+            preg_match_all('/(\d+)/', $currentSongIds, $songMatches);
+            $songIdsArray = isset($songMatches[1]) ? array_map('intval', $songMatches[1]) : [];
+        }
+        
+        // Xóa ID bài hát khỏi danh sách
+        $songIdsArray = array_diff($songIdsArray, [$song['id']]);
+        
+        // Tạo chuỗi songIds mới
+        $newSongIds = implode(', ', $songIdsArray);
+        
+        // Tạo đoạn code mới cho nghệ sĩ
+        $newArtistCode = "  Artist(\n    id: '$artistId',\n    name: '$artistName',\n    image: '$image',\n    songIds: [$newSongIds],\n  )";
+        
+        // Thay thế thông tin nghệ sĩ trong file
+        $pattern = '/Artist\(\s*id:\s*\'' . preg_quote($artistId, '/') . '\'.*?\),/s';
+        $artistsContent = preg_replace($pattern, $newArtistCode . ',', $artistsContent);
+    }
+    
+    // Lưu file artists_list.dart đã cập nhật
+    file_put_contents($ARTISTS_LIST_PATH, $artistsContent);
     
     // Xóa bài hát khỏi file song_list.dart
     $pattern = '/\s*Song\(\s*id:\s*' . $song['id'] . '.*?\),\s*/s';
