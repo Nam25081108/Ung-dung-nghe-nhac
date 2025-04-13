@@ -222,6 +222,9 @@ elseif ($_POST['action'] === 'update') {
     // Cập nhật songIds cho các nghệ sĩ
     updateArtistSongIds($oldSong['id'], $artist);
     
+    // Đồng bộ dữ liệu với database
+    syncSongsToDatabase();
+    
     // Chuyển hướng về dashboard
     header('Location: dashboard.php?success=update');
     exit;
@@ -317,6 +320,9 @@ elseif ($_POST['action'] === 'add') {
     // Cập nhật songIds cho các nghệ sĩ
     updateArtistSongIds($newId, $artist);
     
+    // Đồng bộ dữ liệu với database
+    syncSongsToDatabase();
+    
     // Chuyển hướng về dashboard
     header('Location: dashboard.php?success=add');
     exit;
@@ -400,6 +406,9 @@ elseif ($_POST['action'] === 'delete') {
     if (file_put_contents($SONG_LIST_PATH, $updatedContent) === false) {
         die('Lỗi khi cập nhật file song_list.dart!');
     }
+    
+    // Đồng bộ dữ liệu với database
+    syncSongsToDatabase();
     
     // Chuyển hướng về dashboard
     header('Location: dashboard.php?success=delete');

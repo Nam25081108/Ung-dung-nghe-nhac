@@ -31,29 +31,35 @@ final List<Song> songList = [
 Đèn xanh đỏ vẫn sáng
 Anh như đang ngồi đó
 Nhưng tim thì vắng lặng...''',
-  ),  Song(
+  ),
+  Song(
     id: 2,
     title: 'Chìm Sâu',
     artist: 'MCK',
     coverImage: 'assets/images/chim_sau.png',
     assetPath: 'assets/audio/chim_sau.mp3',
-    lyrics: '\'\'Em đi qua con phố\nĐèn xanh đỏ vẫn sáng\nAnh như đang ngồi đó\nNhưng tim thì vắng lặng...\'\'',
-  ),  Song(
+    lyrics:
+        '\'\'Em đi qua con phố\nĐèn xanh đỏ vẫn sáng\nAnh như đang ngồi đó\nNhưng tim thì vắng lặng...\'\'',
+  ),
+  Song(
     id: 3,
     title: 'Tại Vì Sao',
     artist: 'MCK',
     coverImage: 'assets/images/tai_vi_sao.png',
     assetPath: 'assets/audio/tai_vi_sao.mp3',
-    lyrics: '\'\'Em đi qua con phố\nĐèn xanh đỏ vẫn sáng\nAnh như đang ngồi đó\nNhưng tim thì vắng lặng...\'\'',
-  ),  Song(
+    lyrics:
+        '\'\'Em đi qua con phố\nĐèn xanh đỏ vẫn sáng\nAnh như đang ngồi đó\nNhưng tim thì vắng lặng...\'\'',
+  ),
+  Song(
     id: 4,
     title: 'Chúng Ta Của Hiện Tại',
     artist: 'Sơn Tùng MTP',
     coverImage: 'assets/images/chung_ta_cua_hien_tai.png',
     assetPath: 'assets/audio/chung_ta_cua_hien_tai.mp3',
-    lyrics: '\'\'Em đi qua con phố\nĐèn xanh đỏ vẫn sáng\nAnh như đang ngồi đó\nNhưng tim thì vắng lặng...\'\'',
+    lyrics:
+        '\'\'Em đi qua con phố\nĐèn xanh đỏ vẫn sáng\nAnh như đang ngồi đó\nNhưng tim thì vắng lặng...\'\'',
   ),
-Song(
+  Song(
     id: 5,
     title: 'Đơn Giản',
     artist: 'Low G',
@@ -74,15 +80,17 @@ Nhưng tim thì vắng lặng...''',
 Đèn xanh đỏ vẫn sáng
 Anh như đang ngồi đó
 Nhưng tim thì vắng lặng...''',
-  ),  Song(
+  ),
+  Song(
     id: 7,
     title: 'See Tình',
     artist: 'Hoàng Thùy Linh',
     coverImage: 'assets/images/see_tinh.png',
     assetPath: 'assets/audio/see_tinh.mp3',
-    lyrics: '\'\'Em đi qua con phố\nĐèn xanh đỏ vẫn sáng\nAnh như đang ngồi đó\nNhưng tim thì vắng lặng...\'\'',
+    lyrics:
+        '\'\'Em đi qua con phố\nĐèn xanh đỏ vẫn sáng\nAnh như đang ngồi đó\nNhưng tim thì vắng lặng...\'\'',
   ),
-Song(
+  Song(
     id: 8,
     title: 'Exit Sign',
     artist: 'HIEUTHUHAI',
@@ -169,7 +177,8 @@ Nhưng tim thì vắng lặng...''',
     coverImage: 'assets/images/don_t_c__i.jpg',
     assetPath: 'assets/audio/don_t_c__i.mp3',
     lyrics: 'Dont Côi',
-  ),Song(
+  ),
+  Song(
     id: 13,
     title: 'Chỉ một đêm nữa thôi',
     artist: 'MCK',
@@ -194,7 +203,8 @@ Nhưng tim thì vắng lặng...''',
     coverImage: 'assets/images/lan_man.jpg',
     assetPath: 'assets/audio/lan_man.mp3',
     lyrics: 'aaaaa',
-  ),  Song(
+  ),
+  Song(
     id: 16,
     title: 'Vì chúng ta là con người',
     artist: 'Ronboogz',

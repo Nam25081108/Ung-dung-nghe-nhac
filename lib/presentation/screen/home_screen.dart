@@ -58,7 +58,11 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       await _auth.signOut();
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/login');
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/login',
+          (Route<dynamic> route) => false,
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -97,11 +101,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 20),
                       Row(
                         children: [
-                          GestureDetector(
-                            onTap: _signOut,
-                            child: const CircleAvatar(
-                              backgroundColor: Color(0xFFE0E0E0),
-                              child: Icon(Icons.person, color: Colors.grey),
+                          Tooltip(
+                            message: 'Đăng xuất',
+                            child: GestureDetector(
+                              onTap: _signOut,
+                              child: const CircleAvatar(
+                                backgroundColor: Color(0xFFE0E0E0),
+                                child: Icon(Icons.logout, color: Colors.grey),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 15),
