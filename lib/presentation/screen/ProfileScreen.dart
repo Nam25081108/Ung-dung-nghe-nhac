@@ -134,7 +134,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         await user!.updateDisplayName(_usernameController.text.trim());
 
         setState(() {
-          // Cập nhật UI
+          // Cập nhật UI ngay lập tức
+          user?.updateDisplayName(_usernameController.text.trim());
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
