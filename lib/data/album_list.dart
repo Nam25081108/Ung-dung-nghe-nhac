@@ -1,5 +1,3 @@
-import 'package:t4/data/song_list.dart';
-
 class Album {
   final String id;
   final String name;

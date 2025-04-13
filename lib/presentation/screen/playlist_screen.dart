@@ -5,7 +5,6 @@ import 'package:t4/presentation/screen/ProfileScreen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
 import 'package:t4/presentation/screen/playlist_detail_screen.dart';
 import 'package:t4/presentation/screen/now_playing_screen.dart';
-import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class PlaylistScreen extends StatefulWidget {
@@ -44,7 +43,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       _localPlaylistList = globalPlaylistList
           .where((playlist) =>
               // Chỉ lấy danh sách yêu thích của người dùng hiện tại
-              (playlist.id == 'playlist_my_favorites' && playlist.userId == currentUserId) ||
+              (playlist.id == 'playlist_my_favorites' &&
+                  playlist.userId == currentUserId) ||
               // Lấy các danh sách phát do người dùng hiện tại tạo
               (!playlist.isSystem && playlist.userId == currentUserId))
           .toList();
@@ -287,7 +287,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                   coverImage: 'assets/default_playlist.png', // Ảnh mặc định
                   songIds: [], // Chưa có bài hát nào
                   isSystem: false, // Playlist người dùng tạo
-                  userId: currentUserId, // Thêm thông tin người dùng tạo playlist
+                  userId:
+                      currentUserId, // Thêm thông tin người dùng tạo playlist
                 );
 
                 // Thêm vào biến toàn cục
