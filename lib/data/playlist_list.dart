@@ -6,6 +6,7 @@ class Playlist {
   final String coverImage;
   final List<int> songIds;
   final bool isSystem; // Đánh dấu danh sách phát mặc định của hệ thống
+  final String? userId; // ID của người dùng sở hữu playlist
 
   Playlist({
     required this.id,
@@ -13,18 +14,22 @@ class Playlist {
     required this.coverImage,
     required this.songIds,
     this.isSystem = false,
+    this.userId, // Thêm ID người dùng
   });
 }
 
 // Tạo danh sách phát mặc định
 final List<Playlist> playlistList = [
+  // Danh sách yêu thích không có userId cố định, sẽ được gán khi người dùng đăng nhập
   Playlist(
     id: 'playlist_my_favorites',
     name: 'Yêu thích của tôi',
     coverImage: 'assets/images/favorite_playlist.jpg',
     songIds: [], // Không hardcode bài hát, sẽ được cập nhật từ danh sách bài hát yêu thích
     isSystem: true,
+    // userId sẽ được cập nhật khi người dùng đăng nhập
   ),
+  // Các playlist hệ thống khác là dùng chung, không thuộc về người dùng nào cụ thể
   Playlist(
     id: 'playlist_recently_played',
     name: 'Đã phát gần đây',

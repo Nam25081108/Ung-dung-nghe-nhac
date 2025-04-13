@@ -20,6 +20,52 @@ class Song {
   });
 }
 
+// Lớp mới để lưu trữ thông tin bài hát yêu thích của người dùng
+class UserFavorite {
+  final String userId;
+  final int songId;
+
+  UserFavorite({
+    required this.userId,
+    required this.songId,
+  });
+}
+
+// Danh sách bài hát yêu thích của người dùng
+List<UserFavorite> userFavorites = [];
+
+// Kiểm tra một bài hát có được yêu thích bởi người dùng hay không
+bool isSongFavoriteByUser(int songId, String userId) {
+  return userFavorites.any((favorite) => 
+    favorite.songId == songId && favorite.userId == userId
+  );
+}
+
+// Thêm hoặc xóa bài hát khỏi danh sách yêu thích
+void toggleFavorite(int songId, String userId) {
+  final existingIndex = userFavorites.indexWhere(
+    (favorite) => favorite.songId == songId && favorite.userId == userId
+  );
+  
+  if (existingIndex >= 0) {
+    // Xóa khỏi danh sách yêu thích
+    userFavorites.removeAt(existingIndex);
+  } else {
+    // Thêm vào danh sách yêu thích
+    userFavorites.add(UserFavorite(userId: userId, songId: songId));
+  }
+}
+
+// Lấy danh sách bài hát yêu thích của người dùng
+List<Song> getFavoriteSongs(String userId) {
+  List<int> favoriteSongIds = userFavorites
+      .where((favorite) => favorite.userId == userId)
+      .map((favorite) => favorite.songId)
+      .toList();
+  
+  return songList.where((song) => favoriteSongIds.contains(song.id)).toList();
+}
+
 final List<Song> songList = [
   Song(
     id: 1,
