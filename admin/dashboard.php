@@ -133,6 +133,201 @@ if ($success === 'add') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý âm nhạc - Dashboard</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        /* Add these styles to the existing CSS */
+        .artist-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fff;
+        }
+
+        .artist-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            gap: 4px;
+        }
+
+        .artist-checkbox:hover {
+            background: #e9ecef;
+        }
+
+        .artist-checkbox input[type="checkbox"] {
+            margin: 0;
+            width: 16px;
+            height: 16px;
+        }
+
+        .artist-item {
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-left: 4px;
+        }
+
+        .artist-card .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .artist-card .btn-small {
+            flex: 1;
+            min-width: 90px;
+            max-width: 120px;
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .artist-card .btn-view {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .artist-card .btn-edit {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .artist-card .btn-delete {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .artist-card .btn-small:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .artist-card form.inline-form {
+            margin: 0;
+            padding: 0;
+            flex: 1;
+            min-width: 90px;
+            max-width: 120px;
+        }
+
+        .artist-card form.inline-form button {
+            width: 100%;
+        }
+
+        .artist-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .artist-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-width: 280px;
+        }
+
+        .artist-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .artist-card .artist-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            border: 3px solid #f8f9fa;
+        }
+
+        .artist-card h4 {
+            color: #333;
+            font-size: 18px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .artist-card .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+            width: 100%;
+            padding: 0 10px;
+        }
+
+        .artist-card .btn-small {
+            flex: 1;
+            min-width: 85px;
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .artist-card form.inline-form {
+            margin: 0;
+            padding: 0;
+            flex: 1;
+            min-width: 85px;
+        }
+
+        .artist-card form.inline-form button {
+            width: 100%;
+        }
+
+        /* Add these styles for the preview image */
+        #edit-artist .preview-image {
+            margin-top: 10px;
+            max-width: 200px;
+            max-height: 200px;
+            overflow: hidden;
+            border-radius: 50%;
+            border: 3px solid #f8f9fa;
+        }
+
+        #edit-artist .preview-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -628,6 +823,61 @@ if ($success === 'add') {
     }
 
     .btn-view:hover {
+        background-color: #45a049;
+    }
+
+    .artist-manager h3 {
+        margin: 30px 0 20px;
+        padding-left: 20px;
+        color: #333;
+        font-size: 20px;
+    }
+
+    .artist-manager form {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+
+    .artist-manager .form-group {
+        margin-bottom: 20px;
+    }
+
+    .artist-manager label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .artist-manager input[type="text"],
+    .artist-manager input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    .artist-manager input[type="file"] {
+        padding: 8px;
+        background: #f8f9fa;
+    }
+
+    .artist-manager .btn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.2s;
+    }
+
+    .artist-manager .btn:hover {
         background-color: #45a049;
     }
     </style>

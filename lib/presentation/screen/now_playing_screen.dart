@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:t4/data/song_list.dart';
-import 'package:t4/presentation/screen/lyric_screen.dart';
 import 'package:t4/data/playlist_list.dart';
-import 'dart:math';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:t4/data/artists_list.dart';
+import 'package:t4/presentation/screen/artist_screen.dart';
+import 'package:t4/presentation/screen/lyric_screen.dart';
 import 'package:t4/data/recently_played.dart';
 import 'package:t4/data/user_settings.dart';
+import 'dart:math';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   final Song song;
@@ -44,10 +46,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     _audioPlayer = AudioPlayer();
     _currentIndex = widget.initialIndex;
     _currentSong = widget.song;
-    
+
     // Áp dụng cài đặt người dùng
     _applyUserSettings();
-    
+
     _initializePlayer(_currentSong.assetPath);
 
     // Nghe sự kiện thời lượng và vị trí
@@ -86,7 +88,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       setState(() {
         _isPlaying = true;
       });
-      
+
       // Thêm bài hát vào lịch sử phát gần đây
       final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
       if (currentUserId != null) {
@@ -204,12 +206,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   void _showAddToPlaylistDialog() {
     // Lấy ID của người dùng hiện tại
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    
+
     // Lọc ra các playlist không phải hệ thống và thuộc về người dùng hiện tại
-    List<Playlist> userPlaylists =
-        globalPlaylistList.where((playlist) => 
-          !playlist.isSystem && playlist.userId == currentUserId
-        ).toList();
+    List<Playlist> userPlaylists = globalPlaylistList
+        .where((playlist) =>
+            !playlist.isSystem && playlist.userId == currentUserId)
+        .toList();
 
     showDialog(
       context: context,
@@ -305,16 +307,16 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     // Tìm và cập nhật playlist "Yêu thích của tôi" trong globalPlaylistList
     bool hasPersonalFavorites = false;
     int existingFavoritesIndex = -1;
-    
+
     for (int i = 0; i < globalPlaylistList.length; i++) {
-      if (globalPlaylistList[i].id == 'playlist_my_favorites' && 
+      if (globalPlaylistList[i].id == 'playlist_my_favorites' &&
           globalPlaylistList[i].userId == currentUserId) {
         hasPersonalFavorites = true;
         existingFavoritesIndex = i;
         break;
       }
     }
-    
+
     if (hasPersonalFavorites) {
       // Cập nhật danh sách yêu thích hiện có của người dùng
       globalPlaylistList[existingFavoritesIndex] = Playlist(
@@ -329,7 +331,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       // Tạo một danh sách yêu thích mới cho người dùng hiện tại
       bool foundDefaultFavorites = false;
       for (int i = 0; i < globalPlaylistList.length; i++) {
-        if (globalPlaylistList[i].id == 'playlist_my_favorites' && 
+        if (globalPlaylistList[i].id == 'playlist_my_favorites' &&
             globalPlaylistList[i].userId == null) {
           // Cập nhật playlist mặc định để thuộc về người dùng hiện tại
           globalPlaylistList[i] = Playlist(
@@ -344,7 +346,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           break;
         }
       }
-      
+
       if (!foundDefaultFavorites) {
         // Tạo mới hoàn toàn nếu không tìm thấy playlist mặc định
         globalPlaylistList.add(Playlist(
@@ -375,10 +377,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     setState(() {
       // Cập nhật trạng thái yêu thích
       bool isFavorite = isSongFavoriteByUser(_currentSong.id, currentUserId);
-      
+
       // Thêm/xóa khỏi danh sách yêu thích
       toggleFavorite(_currentSong.id, currentUserId);
-      
+
       // Cập nhật trạng thái hiển thị
       _currentSong.isFavorite = !isFavorite;
 
@@ -402,7 +404,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
     if (currentUserId != null) {
       UserSettings settings = getUserSettings(currentUserId);
-      
+
       // Áp dụng cài đặt
       setState(() {
         _isShuffleEnabled = settings.shuffleByDefault;
@@ -502,15 +504,30 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _currentSong.artist,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 16,
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () {
+                            final artistId = artists
+                                .firstWhere(
+                                  (artist) =>
+                                      artist.name == _currentSong.artist,
+                                )
+                                .id;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ArtistScreen(artistId: artistId),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            _currentSong.artist,
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),

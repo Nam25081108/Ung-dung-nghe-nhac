@@ -7,6 +7,10 @@ import 'package:t4/presentation/screen/playlist_screen.dart';
 import 'now_playing_screen.dart';
 import 'dart:math';
 import 'package:t4/presentation/screen/ProfileScreen.dart';
+import 'package:t4/presentation/screen/artist_screen.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:t4/data/playlist_list.dart';
+import 'package:t4/data/artists_list.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
