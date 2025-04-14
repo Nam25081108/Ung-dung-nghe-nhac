@@ -9,6 +9,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:t4/services/audio_player_handler.dart';
 import 'package:t4/widgets/mini_player.dart';
+import 'package:t4/models/song.dart';
+import 'package:t4/models/playlist.dart';
 
 class PlaylistScreen extends StatefulWidget {
   const PlaylistScreen({Key? key}) : super(key: key);

@@ -11,7 +11,7 @@ List<Artist> artists = [
     id: 'artist_67fb47270d13c',
     name: 'Ronboogz',
     image: 'assets/images/67fb47270ceb8_Ronboogz.jpg',
-    songIds: [],
+    songIds: ['14'],
   ),
   Artist(
     id: 'artist_67fb493bb24dc',

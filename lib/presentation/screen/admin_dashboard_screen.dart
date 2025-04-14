@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:t4/data/song_list.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
+import 'package:t4/models/song.dart';
+
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({Key? key}) : super(key: key);

@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
-import '../data/song_list.dart';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../data/recently_played.dart';
+import '../models/song.dart';
 
 class AudioPlayerHandler with ChangeNotifier {
   final AudioPlayer _player = AudioPlayer();

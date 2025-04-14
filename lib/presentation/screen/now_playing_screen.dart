@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:t4/data/song_list.dart';
 import 'package:t4/data/playlist_list.dart';
-import 'package:t4/data/artists_list.dart';
-import 'package:t4/presentation/screen/artist_screen.dart';
 import 'package:t4/presentation/screen/lyric_screen.dart';
-import 'package:t4/data/recently_played.dart';
 import 'package:t4/data/user_settings.dart';
-import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:t4/presentation/screen/artist_profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:t4/services/audio_player_handler.dart';
+import 'package:t4/models/song.dart';
+import 'package:t4/models/playlist.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   final Song song;
@@ -305,66 +303,66 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   Expanded(
                     child: ListView.builder(
                       shrinkWrap: true,
-                      itemCount: userPlaylists.length,
-                      itemBuilder: (context, index) {
-                        final playlist = userPlaylists[index];
-                        return ListTile(
+                  itemCount: userPlaylists.length,
+                  itemBuilder: (context, index) {
+                    final playlist = userPlaylists[index];
+                    return ListTile(
                           title: Text(
                             playlist.name,
                             style: const TextStyle(color: Colors.white),
                           ),
-                          leading: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: Image.asset(
-                              playlist.coverImage,
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Image.asset(
+                          playlist.coverImage,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                           subtitle: Text(
                             '${playlist.songIds.length} bài hát',
                             style: TextStyle(color: Colors.grey.shade400),
                           ),
-                          onTap: () {
+                      onTap: () {
                             if (!playlist.songIds.contains(widget.song.id)) {
                               setState(() {
                                 playlist.songIds.add(widget.song.id);
-                                // Cập nhật lại playlist trong danh sách toàn cục
+                          // Cập nhật lại playlist trong danh sách toàn cục
                                 final index = globalPlaylistList.indexWhere(
                                   (p) => p.id == playlist.id,
                                 );
                                 if (index != -1) {
                                   globalPlaylistList[index] = playlist;
                                 }
-                                _isAddedToPlaylist = true;
-                              });
+                            _isAddedToPlaylist = true;
+                          });
 
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
                                     'Đã thêm "${widget.song.title}" vào ${playlist.name}',
                                   ),
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
                             } else {
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
                                     'Bài hát đã có trong ${playlist.name}',
                                   ),
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            }
-                          },
-                        );
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
                       },
-                    ),
-                  ),
+                    );
+                  },
+                ),
+        ),
                 ],
               ],
             ),
@@ -533,37 +531,37 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     return Expanded(
                       child: Column(
                         children: [
-                          // Album image
-                          Expanded(
-                            child: Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.3),
-                                    spreadRadius: 5,
-                                    blurRadius: 15,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                ],
-                                image: DecorationImage(
+              // Album image
+              Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          spreadRadius: 5,
+                          blurRadius: 15,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                      image: DecorationImage(
                                   image: AssetImage(currentSong.coverImage),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                          ),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
                           const SizedBox(height: 30),
 
-                          // Song info
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
+              // Song info
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                                     GestureDetector(
                                       onTap: () {
                                         Navigator.push(
@@ -578,14 +576,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                                       },
                                       child: Text(
                                         currentSong.title,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                                     ),
                                     const SizedBox(height: 8),
                                     GestureDetector(
@@ -608,23 +606,23 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                                           decoration: TextDecoration.underline,
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
                                 onPressed: () => _toggleFavorite(currentSong),
-                                icon: Icon(
+                    icon: Icon(
                                   currentSong.isFavorite
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
+                          ? Icons.favorite
+                          : Icons.favorite_border,
                                   color: currentSong.isFavorite
                                       ? Colors.red
                                       : Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
+                    ),
+                  ),
+                ],
+              ),
                         ],
                       ),
                     );
@@ -642,40 +640,40 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                               const Duration(seconds: 100);
                           return Column(
                             children: [
-                              Slider(
+              Slider(
                                 value: position.inSeconds
-                                    .toDouble()
+                    .toDouble()
                                     .clamp(0.0, duration.inSeconds.toDouble()),
-                                min: 0,
+                min: 0,
                                 max: duration.inSeconds.toDouble(),
-                                activeColor: const Color(0xFF31C934),
-                                inactiveColor: Colors.grey.shade800,
-                                onChanged: (value) {
+                activeColor: const Color(0xFF31C934),
+                inactiveColor: Colors.grey.shade800,
+                onChanged: (value) {
                                   final newPosition =
                                       Duration(seconds: value.toInt());
                                   _audioHandler.seekTo(newPosition);
-                                },
-                              ),
-                              Padding(
+                },
+              ),
+              Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16.0),
-                                child: Row(
+                child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
+                  children: [
+                    Text(
                                       _formatDuration(position),
                                       style: const TextStyle(
                                           color: Colors.grey, fontSize: 12),
-                                    ),
-                                    Text(
+                    ),
+                    Text(
                                       _formatDuration(duration),
                                       style: const TextStyle(
                                           color: Colors.grey, fontSize: 12),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                    ),
+                  ],
+                ),
+              ),
                             ],
                           );
                         });
@@ -692,13 +690,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     builder: (context, snapshot) {
                       final isShuffleEnabled = snapshot.data ?? false;
                       return IconButton(
-                        icon: Icon(
-                          Icons.shuffle,
+                    icon: Icon(
+                      Icons.shuffle,
                           color: isShuffleEnabled
-                              ? const Color(0xFF31C934)
-                              : Colors.white,
-                        ),
-                        onPressed: _toggleShuffle,
+                          ? const Color(0xFF31C934)
+                          : Colors.white,
+                    ),
+                    onPressed: _toggleShuffle,
                       );
                     },
                   ),
@@ -726,11 +724,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                       builder: (context, snapshot) {
                         final playing = snapshot.data?.playing ?? false;
                         return IconButton(
-                          icon: Icon(
+                      icon: Icon(
                             playing ? Icons.pause : Icons.play_arrow,
-                            color: Colors.white,
-                            size: 32,
-                          ),
+                        color: Colors.white,
+                        size: 32,
+                      ),
                           onPressed: () => _audioHandler.togglePlayPause(),
                         );
                       },
@@ -753,13 +751,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     builder: (context, snapshot) {
                       final isRepeatEnabled = snapshot.data ?? false;
                       return IconButton(
-                        icon: Icon(
-                          Icons.repeat,
+                    icon: Icon(
+                      Icons.repeat,
                           color: isRepeatEnabled
-                              ? const Color(0xFF31C934)
-                              : Colors.white,
-                        ),
-                        onPressed: _toggleRepeat,
+                          ? const Color(0xFF31C934)
+                          : Colors.white,
+                    ),
+                    onPressed: _toggleRepeat,
                       );
                     },
                   ),
@@ -773,26 +771,26 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     final currentSong =
                         _audioHandler.currentSong ?? widget.song;
                     return Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
                               builder: (_) => LyricsScreen(song: currentSong),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: Colors.grey.shade900,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: const Text('Lời bài hát'),
                       ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.grey.shade900,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: const Text('Lời bài hát'),
+                ),
                     );
                   }),
             ],

@@ -4,7 +4,7 @@ import '../../models/artist.dart';
 import '../../data/artists_list.dart';
 import '../../data/song_list.dart';
 import 'now_playing_screen.dart';
-
+import '../../models/song.dart';
 class ArtistScreen extends StatefulWidget {
   final String artistId;
 

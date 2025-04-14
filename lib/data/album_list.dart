@@ -1,18 +1,4 @@
-import 'package:t4/data/song_list.dart';
-
-class Album {
-  final String id;
-  final String name;
-  final String coverImage;
-  final List<int> songIds;
-
-  Album({
-    required this.id,
-    required this.name,
-    required this.coverImage,
-    required this.songIds,
-  });
-}
+import 'package:t4/models/album.dart';
 
 final List<Album> albumList = [
   Album(

@@ -11,6 +11,8 @@ import 'now_playing_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:t4/services/audio_player_handler.dart';
 import 'package:t4/widgets/mini_player.dart';
+import 'package:t4/models/song.dart';
+import 'package:t4/models/playlist.dart';
 
 // Stream controller toàn cục để thông báo thay đổi playlist
 final StreamController<void> playlistUpdateController =

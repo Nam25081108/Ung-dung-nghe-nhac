@@ -2,18 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:t4/data/song_list.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
-import 'package:t4/presentation/screen/album_screen.dart';
-import 'package:t4/presentation/screen/playlist_screen.dart';
 import 'now_playing_screen.dart';
 import 'dart:math';
 import 'package:t4/presentation/screen/ProfileScreen.dart';
-import 'package:t4/presentation/screen/artist_screen.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:t4/data/playlist_list.dart';
-import 'package:t4/data/artists_list.dart';
 import 'package:provider/provider.dart';
 import 'package:t4/services/audio_player_handler.dart';
 import 'package:t4/widgets/mini_player.dart';
+import 'package:t4/models/song.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

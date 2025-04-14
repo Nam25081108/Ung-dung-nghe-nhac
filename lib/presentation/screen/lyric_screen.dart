@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:t4/data/song_list.dart';
+import 'package:t4/models/song.dart';
 
 class LyricsScreen extends StatelessWidget {
   final Song song;

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:t4/data/playlist_list.dart';
 import 'package:t4/data/song_list.dart';
-import 'package:t4/data/album_list.dart';
 import 'package:t4/presentation/screen/now_playing_screen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
 import 'package:t4/presentation/screen/ProfileScreen.dart';
-import 'package:t4/presentation/screen/album_detail_screen.dart';
 import 'package:t4/presentation/screen/artist_profile_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:t4/services/audio_player_handler.dart';
 import 'package:t4/widgets/mini_player.dart';
+import 'package:t4/models/song.dart';
+import 'package:t4/models/playlist.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final Playlist playlist;

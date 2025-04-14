@@ -1,19 +1,8 @@
-import 'package:t4/data/song_list.dart';
+import 'package:t4/models/playlist.dart';
+import 'package:t4/models/recently.dart';
+import 'package:t4/models/song.dart';
 import 'package:t4/data/playlist_list.dart';
-
-// Lớp lưu trữ lịch sử phát nhạc của người dùng
-class RecentlyPlayed {
-  final String userId;
-  final int songId;
-  final DateTime playedAt;
-
-  RecentlyPlayed({
-    required this.userId,
-    required this.songId,
-    required this.playedAt,
-  });
-}
-
+import 'package:t4/data/song_list.dart';
 // Danh sách lưu trữ lịch sử phát nhạc
 List<RecentlyPlayed> recentlyPlayedList = [];
 

@@ -167,4 +167,3 @@ switch ($action) {
 // Nếu không có action nào được thực hiện, quay lại dashboard
 header('Location: dashboard.php');
 exit;
-?> 

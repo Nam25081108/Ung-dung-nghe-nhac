@@ -1,22 +1,6 @@
+import 'package:t4/models/song.dart';
+import 'package:t4/models/playlist.dart';
 import 'package:t4/data/song_list.dart';
-
-class Playlist {
-  final String id;
-  String name;
-  final String coverImage;
-  final List<int> songIds;
-  final bool isSystem; // Đánh dấu danh sách phát mặc định của hệ thống
-  final String? userId; // ID của người dùng sở hữu playlist
-
-  Playlist({
-    required this.id,
-    required this.name,
-    required this.coverImage,
-    required this.songIds,
-    this.isSystem = false,
-    this.userId, // Thêm ID người dùng
-  });
-}
 
 // Tạo danh sách phát mặc định
 final List<Playlist> playlistList = [
