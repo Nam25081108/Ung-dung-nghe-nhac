@@ -6,6 +6,10 @@ import 'package:t4/presentation/screen/album_detail_screen.dart';
 import 'package:t4/presentation/screen/ProfileScreen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:t4/services/audio_player_handler.dart';
+import 'package:t4/widgets/mini_player.dart';
+import 'package:t4/presentation/screen/now_playing_screen.dart';
 
 class AlbumScreen extends StatefulWidget {
   const AlbumScreen({Key? key}) : super(key: key);
@@ -21,6 +25,9 @@ class _AlbumScreenState extends State<AlbumScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final audioHandler = Provider.of<AudioPlayerHandler>(context);
+    final bool showMiniPlayer = audioHandler.currentSong != null;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -99,44 +106,70 @@ class _AlbumScreenState extends State<AlbumScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '',
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Mini Player khi có bài hát đang phát
+          if (showMiniPlayer)
+            GestureDetector(
+              onTap: () {
+                if (audioHandler.currentSong != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NowPlayingScreen(
+                        song: audioHandler.currentSong!,
+                        songList: audioHandler.currentSongList,
+                        initialIndex: audioHandler.currentIndex,
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: const MiniPlayer(),
+            ),
+          // Bottom Navigation Bar
+          BottomNavigationBar(
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.search),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: '',
+              ),
+            ],
+            currentIndex: 0, // Home is selected by default
+            onTap: (index) {
+              if (index == 1) {
+                // Mở màn hình tìm kiếm
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchScreen()),
+                );
+              } else if (index == 2) {
+                // Mở màn hình yêu thích
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ProfileScreen()),
+                );
+              } else if (index == 0) {
+                // Trở về màn hình home
+                Navigator.pushReplacementNamed(context, '/home');
+              }
+            },
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            selectedItemColor: const Color(0xFF31C934),
+            unselectedItemColor: Colors.grey,
           ),
         ],
-        currentIndex: 0, // Home is selected by default
-        onTap: (index) {
-          if (index == 1) {
-            // Mở màn hình tìm kiếm
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SearchScreen()),
-            );
-          } else if (index == 2) {
-            // Mở màn hình yêu thích
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProfileScreen()),
-            );
-          } else if (index == 0) {
-            // Trở về màn hình home
-            Navigator.pushReplacementNamed(context, '/home');
-          }
-        },
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        selectedItemColor: const Color(0xFF31C934),
-        unselectedItemColor: Colors.grey,
       ),
     );
   }

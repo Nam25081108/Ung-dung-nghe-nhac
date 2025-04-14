@@ -11,6 +11,8 @@ import 'package:t4/presentation/screen/album_screen.dart';
 import 'package:t4/presentation/screen/playlist_screen.dart';
 import 'package:t4/presentation/screen/ProfileScreen.dart';
 import 'firebase_options.dart';
+import 'package:provider/provider.dart';
+import 'services/audio_player_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +20,12 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => AudioPlayerHandler(), // Quản lý player toàn app
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

@@ -8,6 +8,9 @@ import 'package:t4/presentation/screen/ProfileScreen.dart';
 import 'package:t4/presentation/screen/album_detail_screen.dart';
 import 'package:t4/presentation/screen/artist_profile_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:t4/services/audio_player_handler.dart';
+import 'package:t4/widgets/mini_player.dart';
 
 class PlaylistDetailScreen extends StatefulWidget {
   final Playlist playlist;
@@ -379,6 +382,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final audioHandler = Provider.of<AudioPlayerHandler>(context);
+    final bool showMiniPlayer = audioHandler.currentSong != null;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: CustomScrollView(
@@ -593,49 +599,75 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '',
-            backgroundColor: Colors.black,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: '',
-            backgroundColor: Colors.black,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '',
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Mini Player khi có bài hát đang phát
+          if (showMiniPlayer)
+            GestureDetector(
+              onTap: () {
+                if (audioHandler.currentSong != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NowPlayingScreen(
+                        song: audioHandler.currentSong!,
+                        songList: audioHandler.currentSongList,
+                        initialIndex: audioHandler.currentIndex,
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: const MiniPlayer(),
+            ),
+          // Bottom Navigation Bar
+          BottomNavigationBar(
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: '',
+                backgroundColor: Colors.black,
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.search),
+                label: '',
+                backgroundColor: Colors.black,
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: '',
+                backgroundColor: Colors.black,
+              ),
+            ],
+            currentIndex: 0,
+            onTap: (index) {
+              if (index == 1) {
+                // Mở màn hình tìm kiếm
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchScreen()),
+                );
+              } else if (index == 2) {
+                // Mở màn hình hồ sơ (trước đây là yêu thích)
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ProfileScreen()),
+                );
+              } else if (index == 0) {
+                // Trở về màn hình home
+                Navigator.pushNamedAndRemoveUntil(
+                    context, '/home', (route) => false);
+              }
+            },
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            selectedItemColor: Colors.green,
+            unselectedItemColor: Colors.grey,
             backgroundColor: Colors.black,
           ),
         ],
-        currentIndex: 0,
-        onTap: (index) {
-          if (index == 1) {
-            // Mở màn hình tìm kiếm
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SearchScreen()),
-            );
-          } else if (index == 2) {
-            // Mở màn hình hồ sơ (trước đây là yêu thích)
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProfileScreen()),
-            );
-          } else if (index == 0) {
-            // Trở về màn hình home
-            Navigator.pushNamedAndRemoveUntil(
-                context, '/home', (route) => false);
-          }
-        },
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.black,
       ),
     );
   }

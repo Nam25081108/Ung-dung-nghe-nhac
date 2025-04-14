@@ -11,6 +11,9 @@ import 'package:t4/presentation/screen/artist_screen.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:t4/data/playlist_list.dart';
 import 'package:t4/data/artists_list.dart';
+import 'package:provider/provider.dart';
+import 'package:t4/services/audio_player_handler.dart';
+import 'package:t4/widgets/mini_player.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -92,6 +95,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final audioHandler = Provider.of<AudioPlayerHandler>(context);
+    final bool showMiniPlayer = audioHandler.currentSong != null;
+
     return Scaffold(
       body: SafeArea(
         child: _isLoading
@@ -204,45 +210,71 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '',
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Mini Player khi có bài hát đang phát
+          if (showMiniPlayer)
+            GestureDetector(
+              onTap: () {
+                if (audioHandler.currentSong != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NowPlayingScreen(
+                        song: audioHandler.currentSong!,
+                        songList: audioHandler.currentSongList,
+                        initialIndex: audioHandler.currentIndex,
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: const MiniPlayer(),
+            ),
+          // Bottom Navigation Bar
+          BottomNavigationBar(
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.search),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: '',
+              ),
+            ],
+            currentIndex: _selectedTabIndex,
+            onTap: (index) {
+              if (index == 1) {
+                // Mở màn hình tìm kiếm
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchScreen()),
+                );
+              } else if (index == 2) {
+                // Mở màn hình yêu thích
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ProfileScreen()),
+                );
+              } else {
+                setState(() {
+                  _selectedTabIndex = index;
+                });
+              }
+            },
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            selectedItemColor: const Color(0xFF31C934),
+            unselectedItemColor: Colors.grey,
           ),
         ],
-        currentIndex: _selectedTabIndex,
-        onTap: (index) {
-          if (index == 1) {
-            // Mở màn hình tìm kiếm
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SearchScreen()),
-            );
-          } else if (index == 2) {
-            // Mở màn hình yêu thích
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProfileScreen()),
-            );
-          } else {
-            setState(() {
-              _selectedTabIndex = index;
-            });
-          }
-        },
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        selectedItemColor: const Color(0xFF31C934),
-        unselectedItemColor: Colors.grey,
       ),
     );
   }

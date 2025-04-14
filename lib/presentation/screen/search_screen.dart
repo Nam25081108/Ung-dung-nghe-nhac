@@ -8,6 +8,9 @@ import 'package:t4/presentation/screen/ProfileScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:t4/services/audio_player_handler.dart';
+import 'package:t4/widgets/mini_player.dart';
 
 class SearchHistory {
   final String type; // 'song' hoặc 'album'
@@ -283,6 +286,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final audioHandler = Provider.of<AudioPlayerHandler>(context);
+    final bool showMiniPlayer = audioHandler.currentSong != null;
+
     return Scaffold(
       appBar: AppBar(
         title: TextField(
@@ -570,6 +576,57 @@ class _SearchScreenState extends State<SearchScreen> {
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showMiniPlayer)
+            GestureDetector(
+              onTap: () {
+                if (audioHandler.currentSong != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NowPlayingScreen(
+                        song: audioHandler.currentSong!,
+                        songList: audioHandler.currentSongList,
+                        initialIndex: audioHandler.currentIndex,
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: const MiniPlayer(),
+            ),
+          BottomNavigationBar(
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.search),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: '',
+              ),
+            ],
+            currentIndex: 1, // Tab search được chọn
+            onTap: (index) {
+              if (index == 0) {
+                // Về home
+                Navigator.pushReplacementNamed(context, '/home');
+              } else if (index == 2) {
+                // Mở profile
+                Navigator.pushNamed(context, '/profile');
+              }
+            },
+            selectedItemColor: const Color(0xFF31C934),
+            unselectedItemColor: Colors.grey,
+          ),
+        ],
       ),
     );
   }

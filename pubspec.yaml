@@ -49,6 +49,7 @@ dependencies:
   metadata_god: ^1.0.0
   id3: ^1.0.2
   flutter_lyric: ^2.0.4+6
+  provider: ^6.1.4
 dev_dependencies:
   flutter_test:
     sdk: flutter

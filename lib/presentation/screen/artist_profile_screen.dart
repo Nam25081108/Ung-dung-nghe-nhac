@@ -8,6 +8,9 @@ import 'package:t4/data/playlist_list.dart';
 import 'package:t4/data/playlist_controller.dart';
 import 'package:t4/presentation/screen/home_screen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:t4/services/audio_player_handler.dart';
+import 'package:t4/widgets/mini_player.dart';
 
 class ArtistProfileScreen extends StatefulWidget {
   final String artistName;
@@ -385,6 +388,9 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
 
   @override
   Widget build(BuildContext context) {
+    final audioHandler = Provider.of<AudioPlayerHandler>(context);
+    final bool showMiniPlayer = audioHandler.currentSong != null;
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -571,39 +577,64 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
-        selectedItemColor: const Color(0xFF31C934),
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '',
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Mini Player khi có bài hát đang phát
+          if (showMiniPlayer)
+            GestureDetector(
+              onTap: () {
+                if (audioHandler.currentSong != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NowPlayingScreen(
+                        song: audioHandler.currentSong!,
+                        songList: audioHandler.currentSongList,
+                        initialIndex: audioHandler.currentIndex,
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: const MiniPlayer(),
+            ),
+          // Bottom Navigation Bar
+          BottomNavigationBar(
+            currentIndex: 1,
+            selectedItemColor: const Color(0xFF31C934),
+            unselectedItemColor: Colors.grey,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            type: BottomNavigationBarType.fixed,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.search),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: '',
+              ),
+            ],
+            onTap: (index) {
+              if (index == 0) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                );
+              } else if (index == 1) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchScreen()),
+                );
+              }
+            },
           ),
         ],
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
-            );
-          } else if (index == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const SearchScreen()),
-            );
-          }
-        },
       ),
     );
   }

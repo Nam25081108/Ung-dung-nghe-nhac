@@ -8,6 +8,9 @@ import 'package:t4/presentation/screen/home_screen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
 import 'package:t4/presentation/screen/playlist_detail_screen.dart';
 import 'now_playing_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:t4/services/audio_player_handler.dart';
+import 'package:t4/widgets/mini_player.dart';
 
 // Stream controller toàn cục để thông báo thay đổi playlist
 final StreamController<void> playlistUpdateController =
@@ -299,6 +302,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final audioHandler = Provider.of<AudioPlayerHandler>(context);
+    final bool showMiniPlayer = audioHandler.currentSong != null;
+
     // Tính toán số lượng trang và danh sách bài hát cho trang hiện tại
     int totalPages = (favoriteSongs.length / _songsPerPage).ceil();
     int startIndex = _currentPage * _songsPerPage;
@@ -557,27 +563,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '',
-            backgroundColor: Colors.white,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: '',
-            backgroundColor: Colors.white,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '',
-            backgroundColor: Colors.white,
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Mini Player khi có bài hát đang phát
+          if (showMiniPlayer)
+            GestureDetector(
+              onTap: () {
+                if (audioHandler.currentSong != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NowPlayingScreen(
+                        song: audioHandler.currentSong!,
+                        songList: audioHandler.currentSongList,
+                        initialIndex: audioHandler.currentIndex,
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: const MiniPlayer(),
+            ),
+          // Bottom Navigation Bar
+          BottomNavigationBar(
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.search),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: '',
+              ),
+            ],
+            currentIndex: 2, // Tab profile được chọn
+            onTap: (index) {
+              if (index == 0) {
+                // Về home
+                Navigator.pushReplacementNamed(context, '/home');
+              } else if (index == 1) {
+                // Mở search
+                Navigator.pushNamed(context, '/search');
+              }
+            },
+            selectedItemColor: const Color(0xFF31C934),
+            unselectedItemColor: Colors.grey,
           ),
         ],
       ),

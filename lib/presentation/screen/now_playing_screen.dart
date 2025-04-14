@@ -9,6 +9,9 @@ import 'package:t4/data/recently_played.dart';
 import 'package:t4/data/user_settings.dart';
 import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:t4/presentation/screen/artist_profile_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:t4/services/audio_player_handler.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   final Song song;
@@ -27,38 +30,55 @@ class NowPlayingScreen extends StatefulWidget {
 }
 
 class _NowPlayingScreenState extends State<NowPlayingScreen> {
-  late AudioPlayer _audioPlayer;
-  late Song _currentSong;
-  late int _currentIndex;
-
+  late AudioPlayerHandler _audioHandler;
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = const Duration(seconds: 100); // default ban đầu
   bool _isPlaying = false;
   bool _isAddedToPlaylist = false; // Trạng thái đã thêm vào danh sách phát chưa
 
-  // Thêm trạng thái cho lặp lại và phát ngẫu nhiên
-  bool _isRepeatEnabled = false;
-  bool _isShuffleEnabled = false;
-
   @override
   void initState() {
     super.initState();
-    _audioPlayer = AudioPlayer();
-    _currentIndex = widget.initialIndex;
-    _currentSong = widget.song;
 
-    // Áp dụng cài đặt người dùng
-    _applyUserSettings();
+    // Các hàm khởi tạo khác sẽ được chuyển vào didChangeDependencies
+    // vì cần access Provider
+  }
 
-    _initializePlayer(_currentSong.assetPath);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    // Nghe sự kiện thời lượng và vị trí
-    _audioPlayer.positionStream.listen((position) {
+    // Lấy AudioPlayerHandler từ Provider
+    _audioHandler = Provider.of<AudioPlayerHandler>(context);
+
+    // Khởi tạo với bài hát hiện tại nếu khác với bài đang phát
+    if (_audioHandler.currentSong?.id != widget.song.id) {
+      _initPlayer();
+    }
+
+    // Lắng nghe các sự kiện
+    _setupStreams();
+  }
+
+  void _initPlayer() {
+    _audioHandler.playSong(widget.song,
+        songList: widget.songList, initialIndex: widget.initialIndex);
+
+    setState(() {
+      _isPlaying = true;
+    });
+  }
+
+  void _setupStreams() {
+    // Lắng nghe vị trí phát hiện tại
+    _audioHandler.positionStream.listen((position) {
       setState(() {
         _currentPosition = position;
       });
     });
-    _audioPlayer.durationStream.listen((duration) {
+
+    // Lắng nghe tổng thời gian bài hát
+    _audioHandler.durationStream.listen((duration) {
       if (duration != null) {
         setState(() {
           _totalDuration = duration;
@@ -66,136 +86,67 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       }
     });
 
-    // Nghe sự kiện kết thúc bài hát để phát bài tiếp theo
-    _audioPlayer.playerStateStream.listen((state) {
-      if (state.processingState == ProcessingState.completed) {
-        if (_isRepeatEnabled) {
-          // Nếu lặp lại được bật, phát lại bài hiện tại
-          _audioPlayer.seek(Duration.zero);
-          _audioPlayer.play();
-        } else {
-          // Nếu không, chuyển sang bài tiếp theo
-          _playNextSong();
-        }
-      }
+    // Lắng nghe trạng thái playing/paused
+    _audioHandler.playerStateStream.listen((state) {
+      setState(() {
+        _isPlaying = state.playing;
+      });
     });
   }
 
-  Future<void> _initializePlayer(String assetPath) async {
-    try {
-      await _audioPlayer.setAsset(assetPath);
-      _audioPlayer.play();
-      setState(() {
-        _isPlaying = true;
-      });
-
-      // Thêm bài hát vào lịch sử phát gần đây
-      final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-      if (currentUserId != null) {
-        addToRecentlyPlayed(_currentSong.id, currentUserId);
-        updateRecentlyPlayedPlaylist(currentUserId);
-      }
-    } catch (e) {
-      print('Lỗi khi tải file audio: $e');
-    }
-  }
-
   void _playNextSong() {
-    if (_isShuffleEnabled) {
-      // Nếu phát ngẫu nhiên được bật, chọn một bài ngẫu nhiên từ danh sách
-      final Random random = Random();
-      // Tránh phát lại bài hiện tại khi chọn ngẫu nhiên
-      int nextIndex;
-      do {
-        nextIndex = random.nextInt(widget.songList.length);
-      } while (nextIndex == _currentIndex && widget.songList.length > 1);
-
-      _currentIndex = nextIndex;
-    } else {
-      // Nếu không, phát bài tiếp theo trong danh sách
-      _currentIndex = (_currentIndex + 1) % widget.songList.length;
-    }
-
-    _currentSong = widget.songList[_currentIndex];
-    _initializePlayer(_currentSong.assetPath);
-    // Cập nhật lại trạng thái khi chuyển bài
+    _audioHandler.playNextSong();
     setState(() {
       _isAddedToPlaylist = false;
     });
   }
 
   void _playPreviousSong() {
-    if (_isShuffleEnabled) {
-      // Nếu phát ngẫu nhiên được bật, chọn một bài ngẫu nhiên
-      final Random random = Random();
-      int prevIndex;
-      do {
-        prevIndex = random.nextInt(widget.songList.length);
-      } while (prevIndex == _currentIndex && widget.songList.length > 1);
-
-      _currentIndex = prevIndex;
-    } else {
-      // Nếu không, phát bài trước đó
-      _currentIndex =
-          (_currentIndex - 1 + widget.songList.length) % widget.songList.length;
-    }
-
-    _currentSong = widget.songList[_currentIndex];
-    _initializePlayer(_currentSong.assetPath);
-    // Cập nhật lại trạng thái khi chuyển bài
+    _audioHandler.playPreviousSong();
     setState(() {
       _isAddedToPlaylist = false;
     });
   }
 
   void _togglePlay() {
-    if (_isPlaying) {
-      _audioPlayer.pause();
-    } else {
-      _audioPlayer.play();
-    }
-    setState(() {
-      _isPlaying = !_isPlaying;
-    });
+    _audioHandler.togglePlayPause();
   }
 
   void _toggleRepeat() {
-    setState(() {
-      _isRepeatEnabled = !_isRepeatEnabled;
-    });
+    _audioHandler.toggleRepeat();
 
     // Lưu cài đặt người dùng
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
     if (currentUserId != null) {
       UserSettings settings = getUserSettings(currentUserId);
-      settings.repeatByDefault = _isRepeatEnabled;
+      settings.repeatByDefault = _audioHandler.isRepeatEnabled;
       updateUserSettings(settings);
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_isRepeatEnabled ? 'Đã bật lặp lại' : 'Đã tắt lặp lại'),
+        content: Text(_audioHandler.isRepeatEnabled
+            ? 'Đã bật lặp lại'
+            : 'Đã tắt lặp lại'),
         duration: const Duration(seconds: 1),
       ),
     );
   }
 
   void _toggleShuffle() {
-    setState(() {
-      _isShuffleEnabled = !_isShuffleEnabled;
-    });
+    _audioHandler.toggleShuffle();
 
     // Lưu cài đặt người dùng
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
     if (currentUserId != null) {
       UserSettings settings = getUserSettings(currentUserId);
-      settings.shuffleByDefault = _isShuffleEnabled;
+      settings.shuffleByDefault = _audioHandler.isShuffleEnabled;
       updateUserSettings(settings);
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_isShuffleEnabled
+        content: Text(_audioHandler.isShuffleEnabled
             ? 'Đã bật phát ngẫu nhiên'
             : 'Đã tắt phát ngẫu nhiên'),
         duration: const Duration(seconds: 1),
@@ -302,8 +253,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                                   final newPlaylist = Playlist(
                                     id: newId,
                                     name: newPlaylistName.trim(),
-                                    coverImage: _currentSong.coverImage,
-                                    songIds: [_currentSong.id],
+                                    coverImage: widget.song.coverImage,
+                                    songIds: [widget.song.id],
                                     isSystem: false,
                                     userId: currentUserId,
                                   );
@@ -376,9 +327,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                             style: TextStyle(color: Colors.grey.shade400),
                           ),
                           onTap: () {
-                            if (!playlist.songIds.contains(_currentSong.id)) {
+                            if (!playlist.songIds.contains(widget.song.id)) {
                               setState(() {
-                                playlist.songIds.add(_currentSong.id);
+                                playlist.songIds.add(widget.song.id);
                                 // Cập nhật lại playlist trong danh sách toàn cục
                                 final index = globalPlaylistList.indexWhere(
                                   (p) => p.id == playlist.id,
@@ -393,7 +344,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Đã thêm "${_currentSong.title}" vào ${playlist.name}',
+                                    'Đã thêm "${widget.song.title}" vào ${playlist.name}',
                                   ),
                                   duration: const Duration(seconds: 2),
                                 ),
@@ -426,6 +377,44 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     return "${twoDigits(duration.inMinutes)}:${twoDigits(duration.inSeconds % 60)}";
+  }
+
+  void _toggleFavorite(Song song) {
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) {
+      // Nếu chưa đăng nhập, hiển thị thông báo
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng đăng nhập để sử dụng tính năng này'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      // Cập nhật trạng thái yêu thích
+      bool isFavorite = isSongFavoriteByUser(song.id, currentUserId);
+
+      // Thêm/xóa khỏi danh sách yêu thích
+      toggleFavorite(song.id, currentUserId);
+
+      // Cập nhật trạng thái hiển thị
+      song.isFavorite = !isFavorite;
+
+      // Cập nhật danh sách phát yêu thích
+      _updateFavoritePlaylist();
+    });
+
+    // Hiển thị thông báo
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(song.isFavorite
+            ? 'Đã thêm vào danh sách yêu thích'
+            : 'Đã xóa khỏi danh sách yêu thích'),
+        duration: const Duration(seconds: 1),
+      ),
+    );
   }
 
   // Thêm phương thức để cập nhật danh sách phát yêu thích
@@ -494,64 +483,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     }
   }
 
-  void _toggleFavorite() {
-    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserId == null) {
-      // Nếu chưa đăng nhập, hiển thị thông báo
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng đăng nhập để sử dụng tính năng này'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      // Cập nhật trạng thái yêu thích
-      bool isFavorite = isSongFavoriteByUser(_currentSong.id, currentUserId);
-
-      // Thêm/xóa khỏi danh sách yêu thích
-      toggleFavorite(_currentSong.id, currentUserId);
-
-      // Cập nhật trạng thái hiển thị
-      _currentSong.isFavorite = !isFavorite;
-
-      // Cập nhật danh sách phát yêu thích
-      _updateFavoritePlaylist();
-    });
-
-    // Hiển thị thông báo
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_currentSong.isFavorite
-            ? 'Đã thêm vào danh sách yêu thích'
-            : 'Đã xóa khỏi danh sách yêu thích'),
-        duration: const Duration(seconds: 1),
-      ),
-    );
-  }
-
-  // Phương thức mới để áp dụng cài đặt người dùng
-  void _applyUserSettings() {
-    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserId != null) {
-      UserSettings settings = getUserSettings(currentUserId);
-
-      // Áp dụng cài đặt
-      setState(() {
-        _isShuffleEnabled = settings.shuffleByDefault;
-        _isRepeatEnabled = settings.repeatByDefault;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _audioPlayer.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -591,143 +522,198 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
 
-              // Album image
-              Expanded(
-                child: Center(
-                  child: Container(
-                    width: double.infinity,
-                    height: 350,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          spreadRadius: 5,
-                          blurRadius: 15,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                      image: DecorationImage(
-                        image: AssetImage(_currentSong.coverImage),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 40),
-
-              // Song info
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _currentSong.title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 8),
-                        GestureDetector(
-                          onTap: () {
-                            final artistId = artists
-                                .firstWhere(
-                                  (artist) =>
-                                      artist.name == _currentSong.artist,
-                                )
-                                .id;
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ArtistScreen(artistId: artistId),
+              // Album image và song info
+              StreamBuilder<PlayerState>(
+                  stream: _audioHandler.playerStateStream,
+                  builder: (context, snapshot) {
+                    final currentSong =
+                        _audioHandler.currentSong ?? widget.song;
+                    return Expanded(
+                      child: Column(
+                        children: [
+                          // Album image
+                          Expanded(
+                            child: Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    spreadRadius: 5,
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                                image: DecorationImage(
+                                  image: AssetImage(currentSong.coverImage),
+                                  fit: BoxFit.cover,
+                                ),
                               ),
-                            );
-                          },
-                          child: Text(
-                            _currentSong.artist,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey[600],
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: _toggleFavorite,
-                    icon: Icon(
-                      _currentSong.isFavorite
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      color:
-                          _currentSong.isFavorite ? Colors.red : Colors.white,
-                    ),
-                  ),
-                ],
-              ),
+                          const SizedBox(height: 30),
+
+                          // Song info
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                ArtistProfileScreen(
+                                              artistName: currentSong.artist,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        currentSong.title,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                ArtistProfileScreen(
+                                              artistName: currentSong.artist,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        currentSong.artist,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.grey[600],
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () => _toggleFavorite(currentSong),
+                                icon: Icon(
+                                  currentSong.isFavorite
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: currentSong.isFavorite
+                                      ? Colors.red
+                                      : Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
 
               // Slider
-              Slider(
-                value: _currentPosition.inSeconds
-                    .toDouble()
-                    .clamp(0.0, _totalDuration.inSeconds.toDouble()),
-                min: 0,
-                max: _totalDuration.inSeconds.toDouble(),
-                activeColor: const Color(0xFF31C934),
-                inactiveColor: Colors.grey.shade800,
-                onChanged: (value) {
-                  final position = Duration(seconds: value.toInt());
-                  _audioPlayer.seek(position);
-                },
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      _formatDuration(_currentPosition),
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                    Text(
-                      _formatDuration(_totalDuration),
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
+              StreamBuilder<Duration>(
+                  stream: _audioHandler.positionStream,
+                  builder: (context, positionSnapshot) {
+                    final position = positionSnapshot.data ?? Duration.zero;
+                    return StreamBuilder<Duration?>(
+                        stream: _audioHandler.durationStream,
+                        builder: (context, durationSnapshot) {
+                          final duration = durationSnapshot.data ??
+                              const Duration(seconds: 100);
+                          return Column(
+                            children: [
+                              Slider(
+                                value: position.inSeconds
+                                    .toDouble()
+                                    .clamp(0.0, duration.inSeconds.toDouble()),
+                                min: 0,
+                                max: duration.inSeconds.toDouble(),
+                                activeColor: const Color(0xFF31C934),
+                                inactiveColor: Colors.grey.shade800,
+                                onChanged: (value) {
+                                  final newPosition =
+                                      Duration(seconds: value.toInt());
+                                  _audioHandler.seekTo(newPosition);
+                                },
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      _formatDuration(position),
+                                      style: const TextStyle(
+                                          color: Colors.grey, fontSize: 12),
+                                    ),
+                                    Text(
+                                      _formatDuration(duration),
+                                      style: const TextStyle(
+                                          color: Colors.grey, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        });
+                  }),
+              const SizedBox(height: 20),
 
               // Controls
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.shuffle,
-                      color: _isShuffleEnabled
-                          ? const Color(0xFF31C934)
-                          : Colors.white,
-                    ),
-                    onPressed: _toggleShuffle,
+                  // Shuffle button
+                  StreamBuilder<bool>(
+                    stream: Stream.value(_audioHandler.isShuffleEnabled),
+                    builder: (context, snapshot) {
+                      final isShuffleEnabled = snapshot.data ?? false;
+                      return IconButton(
+                        icon: Icon(
+                          Icons.shuffle,
+                          color: isShuffleEnabled
+                              ? const Color(0xFF31C934)
+                              : Colors.white,
+                        ),
+                        onPressed: _toggleShuffle,
+                      );
+                    },
                   ),
+                  // Previous button
                   IconButton(
                     icon: const Icon(Icons.skip_previous,
                         color: Colors.white, size: 36),
-                    onPressed: _playPreviousSong,
+                    onPressed: () {
+                      _audioHandler.playPreviousSong();
+                      setState(() {
+                        _isAddedToPlaylist = false;
+                      });
+                    },
                   ),
+                  // Play/Pause button
                   Container(
                     width: 64,
                     height: 64,
@@ -735,55 +721,80 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                       shape: BoxShape.circle,
                       color: Color(0xFF31C934),
                     ),
-                    child: IconButton(
-                      icon: Icon(
-                        _isPlaying ? Icons.pause : Icons.play_arrow,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-                      onPressed: _togglePlay,
+                    child: StreamBuilder<PlayerState>(
+                      stream: _audioHandler.playerStateStream,
+                      builder: (context, snapshot) {
+                        final playing = snapshot.data?.playing ?? false;
+                        return IconButton(
+                          icon: Icon(
+                            playing ? Icons.pause : Icons.play_arrow,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                          onPressed: () => _audioHandler.togglePlayPause(),
+                        );
+                      },
                     ),
                   ),
+                  // Next button
                   IconButton(
                     icon: const Icon(Icons.skip_next,
                         color: Colors.white, size: 36),
-                    onPressed: _playNextSong,
+                    onPressed: () {
+                      _audioHandler.playNextSong();
+                      setState(() {
+                        _isAddedToPlaylist = false;
+                      });
+                    },
                   ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.repeat,
-                      color: _isRepeatEnabled
-                          ? const Color(0xFF31C934)
-                          : Colors.white,
-                    ),
-                    onPressed: _toggleRepeat,
+                  // Repeat button
+                  StreamBuilder<bool>(
+                    stream: Stream.value(_audioHandler.isRepeatEnabled),
+                    builder: (context, snapshot) {
+                      final isRepeatEnabled = snapshot.data ?? false;
+                      return IconButton(
+                        icon: Icon(
+                          Icons.repeat,
+                          color: isRepeatEnabled
+                              ? const Color(0xFF31C934)
+                              : Colors.white,
+                        ),
+                        onPressed: _toggleRepeat,
+                      );
+                    },
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               // Nút xem lời bài hát
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => LyricsScreen(song: _currentSong),
+              StreamBuilder<PlayerState>(
+                  stream: _audioHandler.playerStateStream,
+                  builder: (context, snapshot) {
+                    final currentSong =
+                        _audioHandler.currentSong ?? widget.song;
+                    return Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => LyricsScreen(song: currentSong),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.grey.shade900,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 32, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: const Text('Lời bài hát'),
                       ),
                     );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.grey.shade900,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: const Text('Lời bài hát'),
-                ),
-              ),
+                  }),
             ],
           ),
         ),
