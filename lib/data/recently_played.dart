@@ -68,7 +68,7 @@ List<Song> getRecentlyPlayedSongs(String userId) {
 void updateRecentlyPlayedPlaylist(String userId) {
   // Lấy danh sách bài hát đã phát gần đây
   List<Song> recentSongs = getRecentlyPlayedSongs(userId);
-  List<int> recentSongIds = recentSongs.map((song) => song.id).toList();
+  List<> recentSongIds = recentSongs.map((song) => song.id).toList();
 
   // Tìm và cập nhật playlist "Đã phát gần đây" trong globalPlaylistList
   bool hasPersonalRecents = false;

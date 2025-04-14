@@ -2,7 +2,7 @@ class Artist {
   final String id;
   final String name;
   final String image;
-  final List<String> songIds;
+  final List<int> songIds;
 
   Artist({
     required this.id,
