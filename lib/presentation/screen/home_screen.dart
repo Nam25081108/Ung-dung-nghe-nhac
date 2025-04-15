@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:t4/data/song_list.dart';
+import 'package:t4/data/album_list.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
-import 'now_playing_screen.dart';
+import 'package:t4/presentation/screen/now_playing_screen.dart';
+import 'package:t4/presentation/screen/album_detail_screen.dart';
 import 'dart:math';
 import 'package:t4/presentation/screen/ProfileScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:t4/services/audio_player_handler.dart';
 import 'package:t4/widgets/mini_player.dart';
 import 'package:t4/models/song.dart';
-
+import 'package:t4/models/album.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,7 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // Danh sách bài hát
   late List<Song> _recommendedSongs = [];
   // Danh sách album
-  late List<Song> _popularAlbums = [];
+  late List<Album> _popularAlbums = [];
+  late List<Album> _randomAlbums = [];
 
   bool _isLoading = true;
 
@@ -46,13 +49,20 @@ class _HomeScreenState extends State<HomeScreen> {
     // Lấy 6 bài hát đầu tiên sau khi xáo trộn
     List<Song> randomSongs = shuffledSongs.take(6).toList();
 
-    // Xáo trộn lại một lần nữa để lấy 6 bài khác cho phần album
-    shuffledSongs.shuffle(Random());
-    List<Song> randomAlbums = shuffledSongs.take(6).toList();
+    // Tạo danh sách album từ albumList
+    List<Album> allAlbums = List.from(albumList);
+    allAlbums.shuffle(Random());
+
+    // Lấy 3 album đầu tiên làm album nổi tiếng
+    List<Album> popularAlbums = allAlbums.take(3).toList();
+
+    // Lấy 6 album tiếp theo làm album ngẫu nhiên
+    List<Album> randomAlbums = allAlbums.skip(3).take(6).toList();
 
     setState(() {
       _recommendedSongs = randomSongs;
-      _popularAlbums = randomAlbums;
+      _popularAlbums = popularAlbums;
+      _randomAlbums = randomAlbums;
       _isLoading = false;
     });
   }
@@ -189,11 +199,59 @@ class _HomeScreenState extends State<HomeScreen> {
                                     index != _popularAlbums.length - 1 ? 15 : 0,
                               ),
                               child: GestureDetector(
-                                onTap: () =>
-                                    _onSongTapped(album, _popularAlbums, index),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          AlbumDetailScreen(album: album),
+                                    ),
+                                  );
+                                },
                                 child: _buildAlbumItem(
-                                  album.title,
-                                  album.artist,
+                                  album.name,
+                                  'Album',
+                                  album.coverImage,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 25),
+                      const Text(
+                        'Album Ngẫu Nhiên',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      SizedBox(
+                        height: 200,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _randomAlbums.length,
+                          itemBuilder: (context, index) {
+                            final album = _randomAlbums[index];
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                right:
+                                    index != _randomAlbums.length - 1 ? 15 : 0,
+                              ),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          AlbumDetailScreen(album: album),
+                                    ),
+                                  );
+                                },
+                                child: _buildAlbumItem(
+                                  album.name,
+                                  'Album',
                                   album.coverImage,
                                 ),
                               ),

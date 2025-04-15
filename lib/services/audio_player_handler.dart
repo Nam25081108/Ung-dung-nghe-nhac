@@ -50,7 +50,9 @@ class AudioPlayerHandler with ChangeNotifier {
       if (state.processingState == ProcessingState.completed) {
         if (_isRepeatEnabled) {
           _player.seek(Duration.zero);
-          _player.play();
+          _player.setAsset(_currentSong!.assetPath).then((_) {
+            _player.play();
+          });
         } else if (_currentIndex < _currentSongList.length - 1 ||
             _isShuffleEnabled) {
           playNextSong();

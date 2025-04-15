@@ -218,7 +218,6 @@ class _AlbumScreenState extends State<AlbumScreen> {
   Widget _buildAlbumListItem(Album album, String artistName) {
     return GestureDetector(
       onTap: () {
-        // Mở trang chi tiết album khi bấm vào một album
         Navigator.push(
           context,
           MaterialPageRoute(

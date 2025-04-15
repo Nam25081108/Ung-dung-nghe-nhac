@@ -1,4 +1,4 @@
-import '../models/artist.dart';
+import 'package:t4/models/artist.dart';
 
 List<Artist> artists = [
   Artist(
@@ -11,7 +11,7 @@ List<Artist> artists = [
     id: 'artist_67fb47270d13c',
     name: 'Ronboogz',
     image: 'assets/images/67fb47270ceb8_Ronboogz.jpg',
-    songIds: [14],
+    songIds: [44, 45, 46],
   ),
   Artist(
     id: 'artist_67fb493bb24dc',
@@ -29,7 +29,7 @@ List<Artist> artists = [
     id: 'artist_67fb4f1e50fdd',
     name: 'Low G',
     image: 'assets/images/67fb4f1e50cec_Low_G.webp',
-    songIds: [22],
+    songIds: [],
   ),
   Artist(
     id: 'artist_67fb4f2b99906',
@@ -41,7 +41,7 @@ List<Artist> artists = [
     id: 'artist_67fb5102d9c1f',
     name: 'Sơn Tùng MTP',
     image: 'assets/images/67fb5102d9858_Sơn Tùng MTP.jpg',
-    songIds: [],
+    songIds: [47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60],
   ),
   Artist(
     id: 'artist_67fb516341a36',
@@ -66,5 +66,33 @@ List<Artist> artists = [
     name: 'Dương Domic',
     image: 'assets/images/67fb51a04d15f_Dương Domic.jpg',
     songIds: [],
+  ),
+  Artist(
+    id: 'artist_67fe4aef7ab8a',
+    name: 'Bùi Trường Linh',
+    image: 'assets/images/67fe4aef79ff5_Bùi Trường Linh.jpg',
+    songIds: [
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43
+    ],
   ),
 ];

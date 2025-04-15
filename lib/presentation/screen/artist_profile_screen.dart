@@ -14,6 +14,7 @@ import 'package:t4/widgets/mini_player.dart';
 import 'package:t4/models/song.dart';
 import 'package:t4/models/playlist.dart';
 import 'package:t4/models/album.dart';
+import 'package:t4/data/album_list.dart' as data;
 
 class ArtistProfileScreen extends StatefulWidget {
   final String artistName;
