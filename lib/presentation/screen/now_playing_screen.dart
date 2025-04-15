@@ -37,34 +37,24 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   @override
   void initState() {
     super.initState();
-
-    // Các hàm khởi tạo khác sẽ được chuyển vào didChangeDependencies
-    // vì cần access Provider
+    _audioHandler = Provider.of<AudioPlayerHandler>(context, listen: false);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Lấy AudioPlayerHandler từ Provider
-    _audioHandler = Provider.of<AudioPlayerHandler>(context);
-
-    // Khởi tạo với bài hát hiện tại nếu khác với bài đang phát
+    // Chỉ khởi tạo player nếu bài hát hiện tại khác với bài hát được yêu cầu
     if (_audioHandler.currentSong?.id != widget.song.id) {
-      _initPlayer();
+      _audioHandler.playSong(
+        widget.song,
+        songList: widget.songList,
+        initialIndex: widget.initialIndex,
+      );
     }
 
     // Lắng nghe các sự kiện
     _setupStreams();
-  }
-
-  void _initPlayer() {
-    _audioHandler.playSong(widget.song,
-        songList: widget.songList, initialIndex: widget.initialIndex);
-
-    setState(() {
-      _isPlaying = true;
-    });
   }
 
   void _setupStreams() {

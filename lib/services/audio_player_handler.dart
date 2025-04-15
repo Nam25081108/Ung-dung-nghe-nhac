@@ -51,8 +51,12 @@ class AudioPlayerHandler with ChangeNotifier {
         if (_isRepeatEnabled) {
           _player.seek(Duration.zero);
           _player.play();
-        } else {
+        } else if (_currentIndex < _currentSongList.length - 1 ||
+            _isShuffleEnabled) {
           playNextSong();
+        } else {
+          _player.seek(Duration.zero);
+          _player.pause();
         }
       }
     });
@@ -99,13 +103,7 @@ class AudioPlayerHandler with ChangeNotifier {
 
     int nextIndex;
     if (_isShuffleEnabled) {
-      int randomIndex = _currentIndex;
-      while (randomIndex == _currentIndex && _currentSongList.length > 1) {
-        randomIndex =
-            (DateTime.now().millisecondsSinceEpoch % _currentSongList.length)
-                .toInt();
-      }
-      nextIndex = randomIndex;
+      nextIndex = _getRandomIndex();
     } else {
       nextIndex = (_currentIndex + 1) % _currentSongList.length;
     }
@@ -119,13 +117,7 @@ class AudioPlayerHandler with ChangeNotifier {
 
     int prevIndex;
     if (_isShuffleEnabled) {
-      int randomIndex = _currentIndex;
-      while (randomIndex == _currentIndex && _currentSongList.length > 1) {
-        randomIndex =
-            (DateTime.now().millisecondsSinceEpoch % _currentSongList.length)
-                .toInt();
-      }
-      prevIndex = randomIndex;
+      prevIndex = _getRandomIndex();
     } else {
       prevIndex = (_currentIndex - 1 + _currentSongList.length) %
           _currentSongList.length;
@@ -133,6 +125,16 @@ class AudioPlayerHandler with ChangeNotifier {
 
     _currentIndex = prevIndex;
     await playSong(_currentSongList[_currentIndex]);
+  }
+
+  int _getRandomIndex() {
+    if (_currentSongList.length <= 1) return 0;
+    int randomIndex = _currentIndex;
+    while (randomIndex == _currentIndex) {
+      randomIndex =
+          DateTime.now().millisecondsSinceEpoch % _currentSongList.length;
+    }
+    return randomIndex;
   }
 
   void toggleRepeat() {

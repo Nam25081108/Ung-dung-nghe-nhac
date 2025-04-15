@@ -3,6 +3,7 @@ import 'package:t4/models/recently.dart';
 import 'package:t4/models/song.dart';
 import 'package:t4/data/playlist_list.dart';
 import 'package:t4/data/song_list.dart';
+
 // Danh sách lưu trữ lịch sử phát nhạc
 List<RecentlyPlayed> recentlyPlayedList = [];
 
@@ -68,7 +69,7 @@ List<Song> getRecentlyPlayedSongs(String userId) {
 void updateRecentlyPlayedPlaylist(String userId) {
   // Lấy danh sách bài hát đã phát gần đây
   List<Song> recentSongs = getRecentlyPlayedSongs(userId);
-  List<> recentSongIds = recentSongs.map((song) => song.id).toList();
+  List<int> recentSongIds = recentSongs.map((song) => song.id).toList();
 
   // Tìm và cập nhật playlist "Đã phát gần đây" trong globalPlaylistList
   bool hasPersonalRecents = false;
