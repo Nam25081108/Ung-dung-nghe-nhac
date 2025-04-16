@@ -51,13 +51,14 @@ class AudioPlayerHandler with ChangeNotifier {
     _player.playerStateStream.listen((state) {
       _isPlaying = state.playing;
       notifyListeners();
-    });
 
-    _player.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
         if (_isRepeatEnabled) {
-          _player.seek(Duration.zero);
-          _player.play();
+          _player.stop().then((_) {
+            _player.setAsset(_currentSong!.assetPath).then((_) {
+              _player.play();
+            });
+          });
         } else if (_currentIndex < _currentSongList.length - 1 ||
             _isShuffleEnabled) {
           playNextSong();
