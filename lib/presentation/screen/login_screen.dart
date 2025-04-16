@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'forgot_password_screen.dart';
-import 'package:provider/provider.dart';
-import 'package:t4/services/audio_player_handler.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -41,13 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (userCredential.user != null) {
         if (mounted) {
-          // Khôi phục trạng thái phát nhạc của user vừa đăng nhập
-          final audioHandler =
-              Provider.of<AudioPlayerHandler>(context, listen: false);
-          await audioHandler.clearPlaybackState(); // Xóa trạng thái cũ
-          await audioHandler
-              .restorePlaybackState(); // Khôi phục trạng thái của user mới
-
           Navigator.pushReplacementNamed(context, '/home');
         }
       }
@@ -87,10 +78,6 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // Đăng xuất khỏi tài khoản Google hiện tại
-      await _googleSignIn.signOut();
-
-      // Hiển thị dialog chọn tài khoản
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
@@ -113,13 +100,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (userCredential.user != null) {
         if (mounted) {
-          // Khôi phục trạng thái phát nhạc của user vừa đăng nhập
-          final audioHandler =
-              Provider.of<AudioPlayerHandler>(context, listen: false);
-          await audioHandler.clearPlaybackState(); // Xóa trạng thái cũ
-          await audioHandler
-              .restorePlaybackState(); // Khôi phục trạng thái của user mới
-
           Navigator.pushReplacementNamed(context, '/home');
         }
       }

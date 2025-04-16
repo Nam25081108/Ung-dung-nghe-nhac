@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:t4/data/song_list.dart';
 import 'package:t4/data/album_list.dart';
-import 'package:t4/data/recently_played.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
 import 'package:t4/presentation/screen/now_playing_screen.dart';
 import 'package:t4/presentation/screen/album_detail_screen.dart';
@@ -27,16 +26,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Danh sách bài hát
   late List<Song> _recommendedSongs = [];
-  late List<Song> _recentlyPlayedSongs = [];
   // Danh sách album
   late List<Album> _popularAlbums = [];
-  late List<Song> _popularSongs = [];
+  late List<Album> _randomAlbums = [];
 
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+
+    // Tải danh sách bài hát từ file local
     _loadSongs();
   }
 
@@ -46,44 +46,29 @@ class _HomeScreenState extends State<HomeScreen> {
     // Xáo trộn danh sách
     shuffledSongs.shuffle(Random());
 
-    // Lấy 6 bài hát đầu tiên sau khi xáo trộn cho phần đề xuất
+    // Lấy 6 bài hát đầu tiên sau khi xáo trộn
     List<Song> randomSongs = shuffledSongs.take(6).toList();
-
-    // Lấy 3 bài hát cho phần nổi tiếng
-    List<Song> popularSongs = shuffledSongs.take(3).toList();
-
-    // Lấy danh sách bài hát nghe gần đây
-    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    List<Song> recentlyPlayed = [];
-    if (currentUserId != null) {
-      recentlyPlayed = getRecentlyPlayedSongs(currentUserId);
-    }
 
     // Tạo danh sách album từ albumList
     List<Album> allAlbums = List.from(albumList);
     allAlbums.shuffle(Random());
 
-    // Lấy 3 album làm album nổi tiếng
+    // Lấy 3 album đầu tiên làm album nổi tiếng
     List<Album> popularAlbums = allAlbums.take(3).toList();
+
+    // Lấy 6 album tiếp theo làm album ngẫu nhiên
+    List<Album> randomAlbums = allAlbums.skip(3).take(6).toList();
 
     setState(() {
       _recommendedSongs = randomSongs;
-      _recentlyPlayedSongs = recentlyPlayed;
       _popularAlbums = popularAlbums;
-      _popularSongs = popularSongs;
+      _randomAlbums = randomAlbums;
       _isLoading = false;
     });
   }
 
   Future<void> _signOut() async {
     try {
-      // Lưu trạng thái phát nhạc trước khi đăng xuất
-      final audioHandler =
-          Provider.of<AudioPlayerHandler>(context, listen: false);
-      await audioHandler.savePlaybackState();
-      await audioHandler.clearPlaybackState();
-
-      // Đăng xuất
       await _auth.signOut();
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(
@@ -194,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 25),
                       const Text(
-                        'Album Và Bài Hát Nổi Tiếng',
+                        'Album Và Đĩa Nổi Tiếng',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -203,93 +188,77 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 15),
                       SizedBox(
                         height: 200,
-                        child: ListView(
+                        child: ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          children: [
-                            // Hiển thị 3 album
-                            ...List.generate(_popularAlbums.length, (index) {
-                              final album = _popularAlbums[index];
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 15),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            AlbumDetailScreen(album: album),
-                                      ),
-                                    );
-                                  },
-                                  child: _buildAlbumItem(
-                                    album.name,
-                                    'Album',
-                                    album.coverImage,
-                                  ),
+                          itemCount: _popularAlbums.length,
+                          itemBuilder: (context, index) {
+                            final album = _popularAlbums[index];
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                right:
+                                    index != _popularAlbums.length - 1 ? 15 : 0,
+                              ),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          AlbumDetailScreen(album: album),
+                                    ),
+                                  );
+                                },
+                                child: _buildAlbumItem(
+                                  album.name,
+                                  'Album',
+                                  album.coverImage,
                                 ),
-                              );
-                            }),
-                            // Hiển thị 3 bài hát
-                            ...List.generate(_popularSongs.length, (index) {
-                              final song = _popularSongs[index];
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  right: index != _popularSongs.length - 1
-                                      ? 15
-                                      : 0,
-                                ),
-                                child: GestureDetector(
-                                  onTap: () =>
-                                      _onSongTapped(song, _popularSongs, index),
-                                  child: _buildMusicItem(
-                                    song.title,
-                                    song.artist,
-                                    song.coverImage,
-                                  ),
-                                ),
-                              );
-                            }),
-                          ],
+                              ),
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(height: 25),
-                      if (_recentlyPlayedSongs.isNotEmpty) ...[
-                        const Text(
-                          'Nghe Gần Đây',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      const Text(
+                        'Album Ngẫu Nhiên',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(height: 15),
-                        SizedBox(
-                          height: 200,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _recentlyPlayedSongs.length,
-                            itemBuilder: (context, index) {
-                              final song = _recentlyPlayedSongs[index];
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  right:
-                                      index != _recentlyPlayedSongs.length - 1
-                                          ? 15
-                                          : 0,
+                      ),
+                      const SizedBox(height: 15),
+                      SizedBox(
+                        height: 200,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _randomAlbums.length,
+                          itemBuilder: (context, index) {
+                            final album = _randomAlbums[index];
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                right:
+                                    index != _randomAlbums.length - 1 ? 15 : 0,
+                              ),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          AlbumDetailScreen(album: album),
+                                    ),
+                                  );
+                                },
+                                child: _buildAlbumItem(
+                                  album.name,
+                                  'Album',
+                                  album.coverImage,
                                 ),
-                                child: GestureDetector(
-                                  onTap: () => _onSongTapped(
-                                      song, _recentlyPlayedSongs, index),
-                                  child: _buildMusicItem(
-                                    song.title,
-                                    song.artist,
-                                    song.coverImage,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                              ),
+                            );
+                          },
                         ),
-                      ],
+                      ),
                     ],
                   ),
                 ),

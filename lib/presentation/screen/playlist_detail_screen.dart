@@ -483,11 +483,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                   ),
                                 ),
                               ).then((_) {
-                                // Cập nhật lại danh sách bài hát khi quay lại
                                 setState(() {
                                   _loadPlaylistSongs();
-                                  // Thông báo cập nhật cho các màn hình khác
-                                  playlistUpdateController.add(null);
                                 });
                               });
                             },
