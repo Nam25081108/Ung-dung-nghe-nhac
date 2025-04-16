@@ -37,4 +37,10 @@ final List<Album> albumList = [
     coverImage: 'assets/images/album_s__n_t__ng_mtp.jpg',
     songIds: [47, 48, 49, 50, 51, 52, 53, 54, 55, 56, ],
   ),
+  Album(
+    id: 'album_low_g_1744782384',
+    name: 'Low G',
+    coverImage: 'assets/images/album_low_g.jpg',
+    songIds: [61, 62, 63, 64, ],
+  ),
 ];
