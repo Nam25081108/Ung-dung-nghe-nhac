@@ -607,10 +607,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onTap: (index) {
               if (index == 0) {
                 // Về home
-                Navigator.pushReplacementNamed(context, '/home');
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                );
               } else if (index == 1) {
                 // Mở search
-                Navigator.pushNamed(context, '/search');
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchScreen()),
+                );
               }
             },
             selectedItemColor: const Color(0xFF31C934),

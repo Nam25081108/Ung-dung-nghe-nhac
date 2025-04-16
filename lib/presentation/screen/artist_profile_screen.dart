@@ -5,7 +5,7 @@ import 'package:t4/presentation/screen/now_playing_screen.dart';
 import 'package:t4/presentation/screen/album_detail_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:t4/data/playlist_list.dart';
-import 'package:t4/data/playlist_controller.dart';
+import 'package:t4/data/playlist_controller.dart' as playlist_controller;
 import 'package:t4/presentation/screen/home_screen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +14,7 @@ import 'package:t4/widgets/mini_player.dart';
 import 'package:t4/models/song.dart';
 import 'package:t4/models/playlist.dart';
 import 'package:t4/models/album.dart';
-import 'package:t4/data/album_list.dart' as data;
+import 'package:t4/presentation/screen/ProfileScreen.dart';
 
 class ArtistProfileScreen extends StatefulWidget {
   final String artistName;
@@ -48,16 +48,24 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
 
     // Lấy tất cả album có bài hát của nghệ sĩ
     artistAlbums = albumList.where((album) {
-      bool hasArtistSong = false;
-      for (var songId in album.songIds) {
-        final song = songList.firstWhere((s) => s.id == songId);
-        if (song.artist.toLowerCase() == widget.artistName.toLowerCase()) {
-          hasArtistSong = true;
-          break;
-        }
-      }
-      return hasArtistSong;
+      final artistSongIds = artistSongs.map((song) => song.id).toList();
+      return album.songIds.any((songId) => artistSongIds.contains(songId));
     }).toList();
+
+    // Nếu không tìm thấy bài hát nào
+    if (artistSongs.isEmpty) {
+      Future.delayed(Duration.zero, () {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Không tìm thấy bài hát nào của nghệ sĩ này'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          Navigator.pop(context);
+        }
+      });
+    }
   }
 
   void _showAddToOtherPlaylistDialog(Song song) {
@@ -73,7 +81,7 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
       return;
     }
 
-    // Lọc ra các playlist của người dùng
+    // Lọc ra các playlist của người dùng hiện tại
     List<Playlist> userPlaylists = globalPlaylistList
         .where((playlist) =>
             !playlist.isSystem &&
@@ -169,7 +177,7 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
 
                                   // Thêm vào danh sách toàn cục
                                   globalPlaylistList.add(newPlaylist);
-                                  playlistUpdateController
+                                  playlist_controller.playlistUpdateController
                                       .notifyPlaylistsUpdated();
 
                                   // Đóng cả 2 dialog
@@ -214,6 +222,11 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
                       itemCount: userPlaylists.length,
                       itemBuilder: (context, index) {
                         final playlist = userPlaylists[index];
+                        // Kiểm tra xem bài hát đã có trong playlist của user hiện tại chưa
+                        final bool isInPlaylist =
+                            playlist.songIds.contains(song.id) &&
+                                playlist.userId == currentUserId;
+
                         return ListTile(
                           title: Text(
                             playlist.name,
@@ -233,16 +246,18 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
                             style: TextStyle(color: Colors.grey.shade400),
                           ),
                           onTap: () {
-                            if (!playlist.songIds.contains(song.id)) {
+                            if (!isInPlaylist) {
                               setState(() {
                                 playlist.songIds.add(song.id);
                                 // Cập nhật lại playlist trong danh sách toàn cục
                                 final index = globalPlaylistList.indexWhere(
-                                  (p) => p.id == playlist.id,
+                                  (p) =>
+                                      p.id == playlist.id &&
+                                      p.userId == currentUserId,
                                 );
                                 if (index != -1) {
                                   globalPlaylistList[index] = playlist;
-                                  playlistUpdateController
+                                  playlist_controller.playlistUpdateController
                                       .notifyPlaylistsUpdated();
                                 }
                               });
@@ -343,7 +358,8 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
                     }
 
                     // Thông báo cập nhật
-                    playlistUpdateController.notifyPlaylistsUpdated();
+                    playlist_controller.playlistUpdateController
+                        .notifyPlaylistsUpdated();
                   });
 
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -605,7 +621,7 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
             ),
           // Bottom Navigation Bar
           BottomNavigationBar(
-            currentIndex: 1,
+            currentIndex: 0,
             selectedItemColor: const Color(0xFF31C934),
             unselectedItemColor: Colors.grey,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -634,6 +650,12 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => const SearchScreen()),
+                );
+              } else if (index == 2) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ProfileScreen()),
                 );
               }
             },

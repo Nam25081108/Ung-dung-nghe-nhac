@@ -302,17 +302,32 @@ class _AlbumScreenState extends State<AlbumScreen> {
                 child: IconButton(
                   icon: const Icon(Icons.add, color: Color(0xFF31C934)),
                   onPressed: () {
-                    // Kiểm tra xem album đã có trong danh sách phát chưa
+                    // Lấy ID của người dùng hiện tại
+                    final String? currentUserId =
+                        FirebaseAuth.instance.currentUser?.uid;
+
+                    if (currentUserId == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Vui lòng đăng nhập để sử dụng tính năng này'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // Kiểm tra xem album đã có trong danh sách phát của user hiện tại chưa
                     bool alreadyExists = false;
                     for (var playlist in globalPlaylistList) {
                       if (!playlist.isSystem &&
-                          playlist.name == "Album ${album.name}") {
+                          playlist.name == "Album ${album.name}" &&
+                          playlist.userId == currentUserId) {
                         alreadyExists = true;
-
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                                'Album ${album.name} đã có trong danh sách phát'),
+                                'Album ${album.name} đã có trong danh sách phát của bạn'),
                             duration: const Duration(seconds: 2),
                           ),
                         );
@@ -324,21 +339,15 @@ class _AlbumScreenState extends State<AlbumScreen> {
                       // Tạo một playlist mới từ album
                       final timestamp = DateTime.now().millisecondsSinceEpoch;
                       final newId =
-                          'playlist_album_${album.name.toLowerCase().replaceAll(' ', '_')}_$timestamp';
-
-                      // Lấy ID của người dùng hiện tại
-                      final String? currentUserId =
-                          FirebaseAuth.instance.currentUser?.uid;
+                          'playlist_album_${album.name.toLowerCase().replaceAll(' ', '_')}_${timestamp}_$currentUserId';
 
                       final newPlaylist = Playlist(
                         id: newId,
                         name: "Album ${album.name}",
                         coverImage: album.coverImage,
-                        songIds: List.from(
-                            album.songIds), // Tạo bản sao danh sách songIds
+                        songIds: List.from(album.songIds),
                         isSystem: false,
-                        userId:
-                            currentUserId, // Thêm ID người dùng tạo playlist
+                        userId: currentUserId,
                       );
 
                       // Thêm vào danh sách toàn cục
@@ -347,7 +356,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                              'Đã thêm album ${album.name} vào danh sách phát'),
+                              'Đã thêm album ${album.name} vào danh sách phát của bạn'),
                           duration: const Duration(seconds: 2),
                         ),
                       );

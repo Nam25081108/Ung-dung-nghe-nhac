@@ -5,6 +5,7 @@ import 'package:t4/data/playlist_list.dart';
 import 'package:t4/presentation/screen/now_playing_screen.dart';
 import 'package:t4/presentation/screen/album_detail_screen.dart';
 import 'package:t4/presentation/screen/ProfileScreen.dart';
+import 'package:t4/presentation/screen/artist_profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,12 +16,24 @@ import 'package:t4/models/song.dart';
 import 'package:t4/models/playlist.dart';
 import 'package:t4/models/album.dart';
 
+class Artist {
+  final String name;
+  final String image;
+  final List<int> songIds;
+
+  Artist({
+    required this.name,
+    required this.image,
+    required this.songIds,
+  });
+}
+
 class SearchHistory {
-  final String type; // 'song' hoặc 'album'
+  final String type; // 'song', 'album' hoặc 'artist'
   final String title;
   final String artist;
   final String coverImage;
-  final String id;
+  final String id; // Luôn lưu dưới dạng string
 
   SearchHistory({
     required this.type,
@@ -67,8 +80,8 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
   List<Song> _filteredSongs = [];
   List<Album> _filteredAlbums = [];
+  List<Artist> _filteredArtists = [];
   List<SearchHistory> _searchHistory = [];
-  static const String _searchHistoryKey = 'search_history';
   String _searchQuery = '';
   final List<Song> selectedSongs = [];
 
@@ -79,8 +92,11 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _loadSearchHistory() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
     final prefs = await SharedPreferences.getInstance();
-    final historyJson = prefs.getStringList(_searchHistoryKey) ?? [];
+    final historyJson = prefs.getStringList('search_history_${user.uid}') ?? [];
     setState(() {
       _searchHistory = historyJson
           .map((item) => SearchHistory.fromJson(json.decode(item)))
@@ -89,13 +105,19 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _saveSearchHistory() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
     final prefs = await SharedPreferences.getInstance();
     final historyJson =
         _searchHistory.map((item) => json.encode(item.toJson())).toList();
-    await prefs.setStringList(_searchHistoryKey, historyJson);
+    await prefs.setStringList('search_history_${user.uid}', historyJson);
   }
 
   void _addToSearchHistory(SearchHistory item) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
     setState(() {
       // Xóa item cũ nếu đã tồn tại
       _searchHistory.removeWhere(
@@ -118,33 +140,90 @@ class _SearchScreenState extends State<SearchScreen> {
     _saveSearchHistory();
   }
 
+  // Xóa toàn bộ lịch sử tìm kiếm
+  Future<void> _clearSearchHistory() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    setState(() {
+      _searchHistory.clear();
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('search_history_${user.uid}');
+  }
+
+  // Tạo danh sách nghệ sĩ từ danh sách bài hát
+  List<Artist> _getArtists() {
+    Map<String, Artist> artistMap = {};
+
+    for (var song in songList) {
+      if (!artistMap.containsKey(song.artist)) {
+        artistMap[song.artist] = Artist(
+          name: song.artist,
+          image: song.coverImage,
+          songIds: [song.id],
+        );
+      } else {
+        artistMap[song.artist]!.songIds.add(song.id);
+      }
+    }
+
+    return artistMap.values.toList();
+  }
+
   void _filterResults(String query) {
     if (query.isEmpty) {
       setState(() {
         _filteredSongs = [];
         _filteredAlbums = [];
+        _filteredArtists = [];
       });
       return;
     }
 
     final lowerQuery = query.toLowerCase();
 
+    // Lọc album
     final albums = albumList.where((album) {
       return album.name.toLowerCase().contains(lowerQuery);
     }).toList();
 
+    // Lọc bài hát
     final songs = songList.where((song) {
       return song.title.toLowerCase().contains(lowerQuery) ||
           song.artist.toLowerCase().contains(lowerQuery);
     }).toList();
 
+    // Lọc nghệ sĩ - chỉ lấy tên nghệ sĩ duy nhất từ danh sách bài hát
+    final artistNames = songList.map((song) => song.artist).toSet();
+    final artists = artistNames
+        .where((name) => name.toLowerCase().contains(lowerQuery))
+        .map((name) {
+          // Lấy ảnh đầu tiên của nghệ sĩ từ bài hát
+          final artistSongs =
+              songList.where((song) => song.artist == name).toList();
+          if (artistSongs.isEmpty) {
+            return null;
+          }
+          return Artist(
+            name: name,
+            image: artistSongs.first.coverImage,
+            songIds: artistSongs.map((song) => song.id).toList(),
+          );
+        })
+        .where((artist) => artist != null)
+        .cast<Artist>()
+        .toList();
+
     setState(() {
       _filteredAlbums = albums;
       _filteredSongs = songs;
+      _filteredArtists = artists;
+      _searchQuery = query;
     });
   }
 
-  void _onSongTapped(Song song, List<Song> songList, int index) {
+  void _onSongTapped(Song song) {
     _addToSearchHistory(SearchHistory(
       type: 'song',
       title: song.title,
@@ -152,25 +231,92 @@ class _SearchScreenState extends State<SearchScreen> {
       coverImage: song.coverImage,
       id: song.id.toString(),
     ));
+
+    // Tìm vị trí của bài hát trong danh sách toàn bộ
+    final index = songList.indexWhere((s) => s.id == song.id);
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => NowPlayingScreen(
           song: song,
-          songList: songList,
-          initialIndex: index,
+          songList: songList, // Sử dụng toàn bộ danh sách nhạc thay vì [song]
+          initialIndex: index, // Vị trí của bài hát trong danh sách toàn bộ
         ),
       ),
     );
   }
 
   void _onAlbumTapped(Album album) {
-    // Lấy nghệ sĩ từ bài hát đầu tiên trong album
-    String artistName = '';
-    if (album.songIds.isNotEmpty) {
-      int firstSongId = album.songIds[0];
-      Song? firstSong = songList.firstWhere(
-        (song) => song.id == firstSongId,
+    if (album.songIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Album này không có bài hát nào'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    final firstSong = songList.firstWhere(
+      (song) => song.id == album.songIds[0],
+      orElse: () => Song(
+        id: 0,
+        title: '',
+        artist: 'Không xác định',
+        coverImage: '',
+        assetPath: '',
+        lyrics: '',
+      ),
+    );
+
+    _addToSearchHistory(SearchHistory(
+      type: 'album',
+      title: album.name,
+      artist: firstSong.artist,
+      coverImage: album.coverImage,
+      id: album.id,
+    ));
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AlbumDetailScreen(album: album),
+      ),
+    );
+  }
+
+  void _onArtistTapped(Artist artist) {
+    if (artist.songIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nghệ sĩ này chưa có bài hát nào'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    _addToSearchHistory(SearchHistory(
+      type: 'artist',
+      title: artist.name,
+      artist: '',
+      coverImage: artist.image,
+      id: artist.name,
+    ));
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ArtistProfileScreen(artistName: artist.name),
+      ),
+    );
+  }
+
+  void _onHistoryItemTapped(SearchHistory history) {
+    if (history.type == 'song') {
+      final song = songList.firstWhere(
+        (s) => s.id.toString() == history.id,
         orElse: () => Song(
           id: 0,
           title: '',
@@ -180,58 +326,30 @@ class _SearchScreenState extends State<SearchScreen> {
           lyrics: '',
         ),
       );
-      artistName = firstSong.artist;
+      if (song.id != 0) {
+        _onSongTapped(song);
+      }
+    } else if (history.type == 'album') {
+      final album = albumList.firstWhere(
+        (a) => a.id == history.id,
+        orElse: () => Album(
+          id: '',
+          name: '',
+          coverImage: '',
+          songIds: [],
+        ),
+      );
+      if (album.id != '') {
+        _onAlbumTapped(album);
+      }
+    } else if (history.type == 'artist') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ArtistProfileScreen(artistName: history.title),
+        ),
+      );
     }
-
-    _addToSearchHistory(SearchHistory(
-      type: 'album',
-      title: album.name,
-      artist: artistName,
-      coverImage: album.coverImage,
-      id: album.id.toString(),
-    ));
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AlbumDetailScreen(album: album),
-      ),
-    );
-  }
-
-  void _onHistoryItemTapped(SearchHistory history) {
-    if (history.type == 'song') {
-      final song = songList.firstWhere((s) => s.id.toString() == history.id);
-      _onSongTapped(song, [song], 0);
-    } else {
-      final album = albumList.firstWhere((a) => a.id.toString() == history.id);
-      _onAlbumTapped(album);
-    }
-  }
-
-  void _filterSongs() {
-    if (_searchQuery.isEmpty) {
-      setState(() {
-        _filteredSongs = [];
-        _filteredAlbums = [];
-      });
-      return;
-    }
-
-    final lowerQuery = _searchQuery.toLowerCase();
-
-    final albums = albumList.where((album) {
-      return album.name.toLowerCase().contains(lowerQuery);
-    }).toList();
-
-    final songs = songList.where((song) {
-      return song.title.toLowerCase().contains(lowerQuery) ||
-          song.artist.toLowerCase().contains(lowerQuery);
-    }).toList();
-
-    setState(() {
-      _filteredAlbums = albums;
-      _filteredSongs = songs;
-    });
   }
 
   void _addSongToPlaylist(Song song) {
@@ -309,7 +427,7 @@ class _SearchScreenState extends State<SearchScreen> {
           onChanged: (value) {
             setState(() {
               _searchQuery = value;
-              _filterSongs();
+              _filterResults(value);
             });
           },
         ),
@@ -385,15 +503,21 @@ class _SearchScreenState extends State<SearchScreen> {
                           itemBuilder: (context, index) {
                             final history = _searchHistory[index];
                             return ListTile(
-                              leading: ClipRRect(
-                                borderRadius: BorderRadius.circular(5),
-                                child: Image.asset(
-                                  history.coverImage,
-                                  width: 40,
-                                  height: 40,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
+                              leading: history.type == 'artist'
+                                  ? CircleAvatar(
+                                      radius: 25,
+                                      backgroundImage:
+                                          AssetImage(history.coverImage),
+                                    )
+                                  : ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: Image.asset(
+                                        history.coverImage,
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
                               title: Text(
                                 history.title,
                                 style: const TextStyle(
@@ -401,7 +525,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                 ),
                               ),
                               subtitle: Text(
-                                '${history.type == 'album' ? 'Album • ' : 'Bài hát • '}${history.artist}',
+                                history.type == 'artist'
+                                    ? 'Nghệ sĩ'
+                                    : '${history.type == 'album' ? 'Album • ' : 'Bài hát • '}${history.artist}',
                               ),
                               trailing: IconButton(
                                 icon: const Icon(Icons.close),
@@ -436,10 +562,47 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   ),
               ] else if (_filteredAlbums.isNotEmpty ||
-                  _filteredSongs.isNotEmpty) ...[
+                  _filteredSongs.isNotEmpty ||
+                  _filteredArtists.isNotEmpty) ...[
                 Expanded(
                   child: CustomScrollView(
                     slivers: [
+                      if (_filteredArtists.isNotEmpty) ...[
+                        const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.only(bottom: 10),
+                            child: Text(
+                              'Nghệ sĩ',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final artist = _filteredArtists[index];
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  radius: 25,
+                                  backgroundImage: AssetImage(artist.image),
+                                ),
+                                title: Text(
+                                  artist.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: const Text('Nghệ sĩ'),
+                                onTap: () => _onArtistTapped(artist),
+                              );
+                            },
+                            childCount: _filteredArtists.length,
+                          ),
+                        ),
+                      ],
                       if (_filteredAlbums.isNotEmpty) ...[
                         const SliverToBoxAdapter(
                           child: Padding(
@@ -557,7 +720,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                       _addSongToPlaylist(song);
                                     }
                                   } else {
-                                    _onSongTapped(song, _filteredSongs, index);
+                                    _onSongTapped(song);
                                   }
                                 },
                               );
