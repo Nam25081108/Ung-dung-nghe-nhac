@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:provider/provider.dart';
+import 'package:t4/services/audio_player_handler.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  const RegisterScreen({Key? key}) : super(key: key);
 
   @override
-  createState() => _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
@@ -100,10 +102,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      // Bắt đầu tiến trình đăng nhập Google
+      // Đăng xuất khỏi tài khoản Google hiện tại
+      await _googleSignIn.signOut();
+
+      // Hiển thị dialog chọn tài khoản
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
-      // Quá trình đã bị hủy nếu googleUser là null
       if (googleUser == null) {
         setState(() {
           _isLoading = false;
@@ -111,28 +115,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return;
       }
 
-      // Lấy thông tin xác thực từ yêu cầu
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      // Tạo credential cho Firebase
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      // Đăng nhập vào Firebase với credential
       final UserCredential userCredential =
           await _auth.signInWithCredential(credential);
 
       if (userCredential.user != null) {
-        // Hiển thị thông báo thành công
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Đăng ký thành công!")),
-          );
+          // Khôi phục trạng thái phát nhạc của user vừa đăng nhập
+          final audioHandler =
+              Provider.of<AudioPlayerHandler>(context, listen: false);
+          await audioHandler.clearPlaybackState(); // Xóa trạng thái cũ
+          await audioHandler
+              .restorePlaybackState(); // Khôi phục trạng thái của user mới
 
-          // Chuyển đến trang chính
           Navigator.pushReplacementNamed(context, '/home');
         }
       }

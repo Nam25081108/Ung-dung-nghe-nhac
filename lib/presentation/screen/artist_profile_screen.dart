@@ -5,7 +5,7 @@ import 'package:t4/presentation/screen/now_playing_screen.dart';
 import 'package:t4/presentation/screen/album_detail_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:t4/data/playlist_list.dart';
-import 'package:t4/data/playlist_controller.dart';
+import 'package:t4/data/playlist_controller.dart' as playlist_controller;
 import 'package:t4/presentation/screen/home_screen.dart';
 import 'package:t4/presentation/screen/search_screen.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +14,7 @@ import 'package:t4/widgets/mini_player.dart';
 import 'package:t4/models/song.dart';
 import 'package:t4/models/playlist.dart';
 import 'package:t4/models/album.dart';
-import 'package:t4/data/album_list.dart' as data;
+import 'package:t4/presentation/screen/ProfileScreen.dart';
 
 class ArtistProfileScreen extends StatefulWidget {
   final String artistName;
@@ -169,7 +169,7 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
 
                                   // Thêm vào danh sách toàn cục
                                   globalPlaylistList.add(newPlaylist);
-                                  playlistUpdateController
+                                  playlist_controller.playlistUpdateController
                                       .notifyPlaylistsUpdated();
 
                                   // Đóng cả 2 dialog
@@ -242,7 +242,7 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
                                 );
                                 if (index != -1) {
                                   globalPlaylistList[index] = playlist;
-                                  playlistUpdateController
+                                  playlist_controller.playlistUpdateController
                                       .notifyPlaylistsUpdated();
                                 }
                               });
@@ -343,7 +343,8 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
                     }
 
                     // Thông báo cập nhật
-                    playlistUpdateController.notifyPlaylistsUpdated();
+                    playlist_controller.playlistUpdateController
+                        .notifyPlaylistsUpdated();
                   });
 
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -605,7 +606,7 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
             ),
           // Bottom Navigation Bar
           BottomNavigationBar(
-            currentIndex: 1,
+            currentIndex: 0,
             selectedItemColor: const Color(0xFF31C934),
             unselectedItemColor: Colors.grey,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -634,6 +635,12 @@ class _ArtistProfileScreenState extends State<ArtistProfileScreen>
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => const SearchScreen()),
+                );
+              } else if (index == 2) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ProfileScreen()),
                 );
               }
             },
